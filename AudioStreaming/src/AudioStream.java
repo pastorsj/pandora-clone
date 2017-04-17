@@ -10,7 +10,7 @@ import java.net.Socket;
 
 public class AudioStream implements Runnable {
     private Socket client;
-    private String song = "/Users/sampastoriza/Documents/Programming/Python Development/pandora-clone/AudioStreaming/song.wav";
+    private String song = "./AudioStreaming/songs/song.wav";
     private File soundFile;
 
     public AudioStream(Socket client) {

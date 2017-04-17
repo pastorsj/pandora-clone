@@ -9,7 +9,7 @@ import java.net.Socket;
 public class AudioServer {
     public static void main(String[] args) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(6666)) {
-            while(true) {
+            while (true) {
                 final Socket client = serverSocket.accept();
                 new Thread(new AudioStream(client)).start();
             }
