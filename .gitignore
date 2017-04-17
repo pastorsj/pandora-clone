@@ -4,3 +4,4 @@ AudioStreaming/out/
 *.wav
 *iml
 *.DS_Store
+out/
