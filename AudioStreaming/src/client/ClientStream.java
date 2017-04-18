@@ -3,9 +3,7 @@ package client;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -57,5 +55,15 @@ public class ClientStream implements Runnable {
 
     public void resumeStream() {
         this.clip.start();
+    }
+
+    public void nextSong() {
+        try (OutputStream out = this.socket.getOutputStream()) {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
+            bw.write("nextsong");
+            bw.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 }
