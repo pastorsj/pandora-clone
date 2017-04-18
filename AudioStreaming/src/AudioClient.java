@@ -1,42 +1,103 @@
 /**
  * Created by sampastoriza on 4/16/17.
  */
-import java.io.*;
-import java.net.*;
-import javax.sound.sampled.*;
+
+import java.util.Scanner;
 
 public class AudioClient {
-    public static void main(String[] args) throws Exception {
-        if (args.length > 0) {
-            // play a file passed via the command line
-            File soundFile = AudioUtil.getSoundFile(args[0]);
-            System.out.println("Client: " + soundFile);
-            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(soundFile))) {
-                play(in);
-            }
-        }
-        else {
-            // play soundfile from server
-            System.out.println("Client: reading from 127.0.0.1:6666");
-            try (Socket socket = new Socket("127.0.0.1", 6666)) {
-                if (socket.isConnected()) {
-                    InputStream in = new BufferedInputStream(socket.getInputStream());
-                    play(in);
-                }
-            }
-        }
 
+    private ClientStream cs = null;
+    private Thread t;
+
+    public static void main(String[] args) throws Exception {
+        AudioClient ac = new AudioClient();
+        ac.beginCLI();
+    }
+
+    public void beginCLI() {
+        System.out.println("Welcome to Pandora's Box! This is a simple cli to interact with our service. \n Type help if you are new and need the commands possibles");
+        System.out.print("$ ");
+        Scanner sc = new Scanner(System.in);
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine();
+            switch (line) {
+                case "help":
+                    this.printHelpCommands();
+                    break;
+                case "play":
+                    this.playStream();
+                    break;
+                case "stop":
+                    this.stopStream();
+                    break;
+                case "pause":
+                    this.pauseStream();
+                    break;
+                case "next":
+                    this.nextSong();
+                    break;
+                case "resume":
+                    this.resumeSong();
+                    break;
+                case "quit":
+                case "exit":
+                case "q":
+                    this.stopStream();
+                    return;
+                default:
+                    System.out.println("The command " + line + " does not exist. Type help if you need help");
+                    break;
+            }
+            System.out.print("$ ");
+
+        }
         System.out.println("Client: end");
     }
 
-
-    private static synchronized void play(final InputStream in) throws Exception {
-        AudioInputStream ais = AudioSystem.getAudioInputStream(in);
-        try (Clip clip = AudioSystem.getClip()) {
-            clip.open(ais);
-            clip.start();
-            Thread.sleep(100); // given clip.drain a chance to start
-            clip.drain();
+    private void playStream() {
+        if (cs == null) {
+            cs = new ClientStream();
+            t = new Thread(cs);
+            t.start();
+        } else {
+            System.out.println("Stream has already started");
         }
     }
+
+    private void stopStream() {
+        System.out.println("Stopping stream");
+        cs.stopStream();
+        cs = null;
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void pauseStream() {
+        System.out.println("Pausing stream");
+        cs.pauseStream();
+    }
+
+    private void nextSong() {
+        System.out.println("Moving to the next song");
+    }
+
+    private void resumeSong() {
+        System.out.println("Resume the music");
+        cs.resumeStream();
+    }
+
+    private void printHelpCommands() {
+        System.out.println("help: Prints all of the commands associated with the application");
+        System.out.println("play: Connects to and plays the stream");
+        System.out.println("stop: Stops the stream");
+        System.out.println("pause: Pauses the current song");
+        System.out.println("next: Skips to the next song");
+        System.out.println("resume: Resumes the music");
+        System.out.println("quit: Quits the CLI");
+    }
+
+
 }

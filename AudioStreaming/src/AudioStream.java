@@ -20,7 +20,6 @@ public class AudioStream implements Runnable {
 
     @Override
     public void run() {
-
         try {
             OutputStream out = this.client.getOutputStream();
             FileInputStream in = new FileInputStream(this.soundFile);

@@ -3,5 +3,5 @@ AudioStreaming/out/
 *.mp3
 *.wav
 *iml
-*.DS_Store
+.DS_Store
 out/
