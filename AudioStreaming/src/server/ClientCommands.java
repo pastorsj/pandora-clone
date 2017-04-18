@@ -41,6 +41,6 @@ public class ClientCommands implements Runnable {
 
     public void nextSong() {
         System.out.println("Going to the next song");
-        stream.playNextSong();
+        stream.playStream();
     }
 }

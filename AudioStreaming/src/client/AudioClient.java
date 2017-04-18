@@ -84,8 +84,10 @@ public class AudioClient {
     }
 
     private void nextSong() {
-        System.out.println("Moving to the next song");
-        cs.nextSong();
+        this.stopStream();
+        this.playStream();
+//        System.out.println("Moving to the next song");
+//        cs.endCurrentSong();
     }
 
     private void resumeSong() {

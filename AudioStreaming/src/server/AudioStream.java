@@ -20,6 +20,7 @@ public class AudioStream implements Runnable {
     private File currentSong;
     private List<String> songs;
     private FileInputStream in = null;
+    private OutputStream out = null;
 
     public AudioStream(Socket client) {
         this.client = client;
@@ -38,28 +39,27 @@ public class AudioStream implements Runnable {
                 songs.add(file.getAbsolutePath());
             }
         }
-        this.shuffleSongs();
+        this.playNextSong();
     }
 
-    public void shuffleSongs() {
-        // Random for now
-        while(true) {
-            this.playNextSong();
-        }
-    }
 
     public void playSong(String song) {
         try {
             this.currentSong = AudioUtil.getSoundFile(song);
-            OutputStream out = this.client.getOutputStream();
+            this.out = this.client.getOutputStream();
             this.in = new FileInputStream(this.currentSong);
-            byte buffer[] = new byte[2048];
+            byte buffer[] = new byte[1024];
             int count;
             while ((count = this.in.read(buffer)) != -1)
-                out.write(buffer, 0, count);
+                try {
+                    out.write(buffer, 0, count);
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                    break;
+                }
         } catch (IOException e) {
             System.out.println();
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -67,9 +67,11 @@ public class AudioStream implements Runnable {
         try {
             if (this.in != null) {
                 this.in.close();
+                this.out.flush();
             }
             Random r = new Random();
-            int nextSongIndex = r.nextInt(songs.size());
+            System.out.println(this.songs.size());
+            int nextSongIndex = r.nextInt(this.songs.size());
             String song = this.songs.get(nextSongIndex);
             this.playSong(song);
         } catch (IOException e) {
