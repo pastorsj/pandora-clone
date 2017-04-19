@@ -60,11 +60,10 @@ public class ClientStream implements Runnable {
 
     public void login(String username, String password) {
         try (OutputStream out = this.socket.getOutputStream()) {
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
-            bw.write("login\n");
-            bw.write(username + "\n");
-            bw.write(password + "\n");
-            bw.newLine();
+            PrintWriter pw = new PrintWriter(out, true);
+            pw.println("login");
+            pw.println(username);
+            pw.println(password);
         } catch (IOException e) {
             e.printStackTrace();
         }
