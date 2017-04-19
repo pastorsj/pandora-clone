@@ -3,9 +3,7 @@ package client;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -13,8 +11,9 @@ import java.net.Socket;
  */
 public class ClientStream implements Runnable {
 
-    private volatile Socket socket;
-    private volatile Clip clip;
+    private Socket socket;
+    private Clip clip;
+    private AudioInputStream ais;
 
     @Override
     public void run() {
@@ -25,6 +24,7 @@ public class ClientStream implements Runnable {
                 this.play(in);
             }
         } catch (Exception e) {
+            Thread.currentThread().interrupt();
             e.printStackTrace();
         }
     }
@@ -38,17 +38,27 @@ public class ClientStream implements Runnable {
         }
     }
 
-    private synchronized void play(final InputStream in) {
+    private void play(final InputStream in) {
         try {
-            AudioInputStream ais = AudioSystem.getAudioInputStream(in);
+            this.ais = AudioSystem.getAudioInputStream(in);
             this.clip = AudioSystem.getClip();
             this.clip.open(ais);
             this.clip.start();
             Thread.sleep(100); // given clip.drain a chance to start
             this.clip.drain();
-        } catch(Exception e) {
+            this.nextSong();
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void endCurrentSong() {
+        //this.clip.stop();
+        //this.nextSong();
+        this.clip.stop();
+        this.clip.setFramePosition(this.clip.getFrameLength() - 1);
+        this.clip.start();
+        //this.clip.flush();
     }
 
     public void pauseStream() {
@@ -57,5 +67,18 @@ public class ClientStream implements Runnable {
 
     public void resumeStream() {
         this.clip.start();
+    }
+
+    public void nextSong() {
+        if (!this.socket.isClosed() && this.socket.isConnected()) {
+            try (OutputStream out = this.socket.getOutputStream()) {
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
+                bw.write("nextsong");
+                bw.close();
+
+            } catch (IOException e) {
+                // e.printStackTrace(); // shhh
+            }
+        }
     }
 }

@@ -66,6 +66,9 @@ public class AudioClient {
 
     private void stopStream() {
         System.out.println("Stopping stream");
+        if (cs == null) {
+            return;
+        }
         cs.stopStream();
         cs = null;
         try {
@@ -81,7 +84,10 @@ public class AudioClient {
     }
 
     private void nextSong() {
-        System.out.println("Moving to the next song");
+        this.stopStream();
+        this.playStream();
+//        System.out.println("Moving to the next song");
+//        cs.endCurrentSong();
     }
 
     private void resumeSong() {
