@@ -11,12 +11,11 @@ import java.util.Random;
 
 /**
  * Created by sampastoriza on 4/16/17.
- * Might want a directory listener later
  */
 
 public class AudioStream implements Runnable {
     private Socket client;
-    private String songsDir = "./AudioStreaming/songs";
+    private String songsDir = "./songs";
     private File currentSong;
     private List<String> songs;
     private FileInputStream in = null;
