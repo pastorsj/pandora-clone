@@ -71,13 +71,13 @@ public class AudioStream implements Runnable {
                 try {
                     out.write(buffer, 0, count);
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                     break;
                 }
             tmp.delete();
         } catch (IOException e) {
             System.out.println();
-            //e.printStackTrace();
+            e.printStackTrace();
         } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
         }

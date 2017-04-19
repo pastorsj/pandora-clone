@@ -15,18 +15,18 @@ public class ClientStream implements Runnable {
     private Clip clip;
     private AudioInputStream ais;
 
-    @Override
-    public void run() {
+    public ClientStream() {
         try {
             this.socket = new Socket("127.0.0.1", 6666);
-            if (this.socket.isConnected()) {
-                InputStream in = new BufferedInputStream(this.socket.getInputStream());
-                this.play(in);
-            }
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void run() {
+        this.play();
     }
 
     public void stopStream() {
@@ -38,8 +38,9 @@ public class ClientStream implements Runnable {
         }
     }
 
-    private void play(final InputStream in) {
+    private void play() {
         try {
+            InputStream in = new BufferedInputStream(this.socket.getInputStream());
             this.ais = AudioSystem.getAudioInputStream(in);
             this.clip = AudioSystem.getClip();
             this.clip.open(ais);
@@ -58,8 +59,7 @@ public class ClientStream implements Runnable {
             bw.write("login\n");
             bw.write(username + "\n");
             bw.write(password + "\n");
-            bw.close();
-
+            bw.newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,7 +79,6 @@ public class ClientStream implements Runnable {
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
                 bw.write("nextsong");
                 bw.close();
-
             } catch (IOException e) {
                 // e.printStackTrace(); // shhh
             }

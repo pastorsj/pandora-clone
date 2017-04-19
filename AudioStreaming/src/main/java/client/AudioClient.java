@@ -44,6 +44,9 @@ public class AudioClient {
                 case "login":
                     this.login(sc);
                     break;
+                case "connect":
+                    this.connect();
+                    break;
                 case "register":
                     this.register(sc);
                     break;
@@ -63,13 +66,13 @@ public class AudioClient {
     }
 
     private void playStream() {
-        if (cs == null) {
-            cs = new ClientStream();
-            t = new Thread(cs);
-            t.start();
-        } else {
-            System.out.println("Stream has already started");
-        }
+        t = new Thread(cs);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void connect() {
+        cs = new ClientStream();
     }
 
     private void register(Scanner sc) {
