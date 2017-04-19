@@ -80,7 +80,7 @@ public class AudioClient {
         System.out.print("Username: ");
         String username = sc.nextLine();
         System.out.print("Password: ");
-        String passw ord = sc.nextLine();
+        String password = sc.nextLine();
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             messageDigest.update(password.getBytes());
