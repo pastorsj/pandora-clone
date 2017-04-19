@@ -76,8 +76,7 @@ public class AudioStream implements Runnable {
                 }
             tmp.delete();
         } catch (IOException e) {
-            System.out.println();
-            //e.printStackTrace();
+            e.printStackTrace();
         } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
         }
@@ -90,7 +89,7 @@ public class AudioStream implements Runnable {
                 this.out.flush();
             }
             Random r = new Random();
-            System.out.println(this.songs.size());
+            //System.out.println(this.songs.size());
             int nextSongIndex = r.nextInt(this.songs.size());
             String song = this.songs.get(nextSongIndex);
             this.playSong(song);

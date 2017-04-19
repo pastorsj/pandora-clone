@@ -46,7 +46,7 @@ public class ClientStream implements Runnable {
             this.clip.start();
             Thread.sleep(100); // given clip.drain a chance to start
             this.clip.drain();
-            this.nextSong();
+            this.nextSong(in);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,15 +69,14 @@ public class ClientStream implements Runnable {
         this.clip.start();
     }
 
-    public void nextSong() {
+    public void nextSong(InputStream in) {
         if (!this.socket.isClosed() && this.socket.isConnected()) {
             try (OutputStream out = this.socket.getOutputStream()) {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
-                bw.write("nextsong");
-                bw.close();
-
+                PrintWriter pw = new PrintWriter(this.socket.getOutputStream(), true);
+                pw.println("nextsong");
+                this.play(in);
             } catch (IOException e) {
-                // e.printStackTrace(); // shhh
+                e.printStackTrace(); // shhh
             }
         }
     }
