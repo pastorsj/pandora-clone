@@ -52,13 +52,17 @@ public class ClientStream implements Runnable {
         }
     }
 
-    public void endCurrentSong() {
-        //this.clip.stop();
-        //this.nextSong();
-        this.clip.stop();
-        this.clip.setFramePosition(this.clip.getFrameLength() - 1);
-        this.clip.start();
-        //this.clip.flush();
+    public void login(String username, String password) {
+        try (OutputStream out = this.socket.getOutputStream()) {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
+            bw.write("login\n");
+            bw.write(username + "\n");
+            bw.write(password + "\n");
+            bw.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void pauseStream() {

@@ -29,6 +29,12 @@ public class ClientCommands implements Runnable {
                     case "nextsong":
                         this.nextSong();
                         break;
+                    case "login":
+                        this.login(br);
+                        break;
+                    case "register":
+                        this.register(br);
+                        break;
                     default:
                         break;
                 }
@@ -42,5 +48,22 @@ public class ClientCommands implements Runnable {
     public void nextSong() {
         System.out.println("Going to the next song");
         stream.playStream();
+    }
+
+    private void login(BufferedReader br) {
+        System.out.println("Logging in user");
+        try {
+            String username = br.readLine();
+            String password = br.readLine();
+            System.out.println("Username: " + username);
+            System.out.println("Password: " + password);
+        } catch (IOException e) {
+            System.err.println("Username or password does not exist");
+            e.printStackTrace();
+        }
+    }
+
+    private void register(BufferedReader br) {
+        System.out.println("Registering user");
     }
 }
