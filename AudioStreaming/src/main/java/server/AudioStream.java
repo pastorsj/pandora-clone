@@ -57,11 +57,12 @@ public class AudioStream implements Runnable {
                     sourceFormat.getChannels() * 2,
                     sourceFormat.getSampleRate(),
                     false);
-            File tmp = new File("tmp.wav");
+            String tmpName = "tmp" + Thread.currentThread().getId();
+            File tmp = new File(tmpName);
             AudioInputStream converted = AudioSystem.getAudioInputStream(convertFormat, mp3Stream);
             AudioSystem.write(converted, AudioFileFormat.Type.WAVE, tmp);
 
-            this.currentSong = AudioUtil.getSoundFile("tmp.wav");
+            this.currentSong = AudioUtil.getSoundFile(tmpName);
             this.out = this.client.getOutputStream();
             this.in = new FileInputStream(this.currentSong);
             byte buffer[] = new byte[1024];
