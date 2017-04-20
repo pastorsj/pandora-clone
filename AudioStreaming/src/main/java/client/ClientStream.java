@@ -5,6 +5,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by sampastoriza on 4/18/17.
@@ -14,6 +15,7 @@ public class ClientStream implements Runnable {
     private Socket socket;
     private Clip clip;
     private AudioInputStream ais;
+    private AtomicBoolean streamStopped = new AtomicBoolean(false);
 
     public ClientStream() {
         try {
@@ -52,6 +54,10 @@ public class ClientStream implements Runnable {
             this.clip.start();
             Thread.sleep(100); // given clip.drain a chance to start
             this.clip.drain();
+            while(this.streamStopped.get()) {
+                Thread.sleep(100); // given clip.drain a chance to start
+                this.clip.drain();
+            }
             this.nextSong(in);
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,11 +76,13 @@ public class ClientStream implements Runnable {
     }
 
     public void pauseStream() {
+        this.streamStopped.set(true);
         this.clip.stop();
     }
 
     public void resumeStream() {
         this.clip.start();
+        this.streamStopped.set(false);
     }
 
     public void nextSong(InputStream in) {
