@@ -42,6 +42,7 @@ public class ClientStream implements Runnable {
             this.clip.stop();
             this.socket.close();
         } catch (IOException e) {
+            System.out.println("Stopped stream");
             e.printStackTrace();
         }
     }

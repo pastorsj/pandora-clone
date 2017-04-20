@@ -110,8 +110,11 @@ public class AudioClient {
     }
 
     private void pauseStream() {
-        System.out.println("Pausing stream");
-        cs.pauseStream();
+        if(cs != null) {
+            System.out.println("Pausing stream");
+            cs.pauseStream();
+        }
+
     }
 
     private void nextSong() {
@@ -120,8 +123,10 @@ public class AudioClient {
     }
 
     private void resumeSong() {
-        System.out.println("Resume the music");
-        cs.resumeStream();
+        if(cs != null) {
+            System.out.println("Resume the music");
+            cs.resumeStream();
+        }
     }
 
     private void printHelpCommands() {
