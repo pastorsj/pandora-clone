@@ -66,6 +66,7 @@ public class AudioClient {
     }
 
     private void playStream() {
+        this.connect();
         t = new Thread(cs);
         t.setDaemon(true);
         t.start();
