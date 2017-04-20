@@ -39,6 +39,9 @@ public class AudioClient {
                 case "resume":
                     this.resumeSong();
                     break;
+                case "connect":
+                    this.connect();
+                    break;
                 case "quit":
                 case "exit":
                 case "q":
@@ -55,13 +58,14 @@ public class AudioClient {
     }
 
     private void playStream() {
-        if (cs == null) {
-            cs = new ClientStream();
-            t = new Thread(cs);
-            t.start();
-        } else {
-            System.out.println("Stream has already started");
-        }
+        this.connect();
+        t = new Thread(cs);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void connect() {
+        cs = new ClientStream();
     }
 
     private void stopStream() {
@@ -79,20 +83,23 @@ public class AudioClient {
     }
 
     private void pauseStream() {
-        System.out.println("Pausing stream");
-        cs.pauseStream();
+        if(cs != null) {
+            System.out.println("Pausing stream");
+            cs.pauseStream();
+        }
+
     }
 
     private void nextSong() {
         this.stopStream();
         this.playStream();
-//        System.out.println("Moving to the next song");
-//        cs.endCurrentSong();
     }
 
     private void resumeSong() {
-        System.out.println("Resume the music");
-        cs.resumeStream();
+        if(cs != null) {
+            System.out.println("Resume the music");
+            cs.resumeStream();
+        }
     }
 
     private void printHelpCommands() {

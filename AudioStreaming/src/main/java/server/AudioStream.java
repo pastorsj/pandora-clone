@@ -3,6 +3,7 @@ package server;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.neo4j.driver.v1.*;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -38,11 +39,15 @@ public class AudioStream implements Runnable {
     }
 
     public void playStream() {
-        Collection<File> files = FileUtils.listFiles(new File(this.songsDir), new RegexFileFilter("^(.*.mp3)"), DirectoryFileFilter.DIRECTORY);
-        for (File file : files) {
-            if (file.getName().endsWith(".mp3")) {
-                songs.add(file.getAbsolutePath());
-            }
+        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
+        Session session = driver.session();
+        StatementResult result = session.run("MATCH (s:Song) RETURN s.filepath as filepath");
+        while ( result.hasNext() )
+        {
+            Record record = result.next();
+            String filePath = record.get("filepath").asString();
+            System.out.println("Filepath: " + filePath);
+            songs.add(filePath);
         }
         this.playNextSong();
     }
@@ -71,7 +76,7 @@ public class AudioStream implements Runnable {
                 try {
                     out.write(buffer, 0, count);
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                     break;
                 }
             tmp.delete();
