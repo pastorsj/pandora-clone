@@ -6,6 +6,7 @@ import javax.sound.sampled.Clip;
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.sound.sampled.*;
 
 /**
  * Created by sampastoriza on 4/18/17.
@@ -76,6 +77,28 @@ public class ClientStream implements Runnable {
     public void resumeStream() {
         this.clip.start();
         this.streamPaused.set(false);
+    }
+
+    public void volumeDown() {
+        FloatControl gainControl =
+                (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+        if ((gainControl.getValue() - 1.0f) < gainControl.getMinimum()) {
+            System.out.println("Volume is at min");
+        } else {
+            System.out.println("Increasing the volume");
+            gainControl.setValue(gainControl.getValue() - 1.0f); // Reduce volume by 10 decibels.
+        }
+    }
+
+    public void volumeUp() {
+        FloatControl gainControl =
+                (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+        if ((gainControl.getValue() + 1.0f) > gainControl.getMaximum()) {
+            System.out.println("Volume is at max");
+        } else {
+            System.out.println("Decreasing the volume");
+            gainControl.setValue(gainControl.getValue() + 1.0f); // increase volume by 10 decibels.
+        }
     }
 
     public void nextSong(InputStream in) {
