@@ -42,6 +42,12 @@ public class AudioClient {
                 case "connect":
                     this.connect();
                     break;
+                case "volume up":
+                    this.volumeUp();
+                    break;
+                case "volume down":
+                    this.volumeDown();
+                    break;
                 case "quit":
                 case "exit":
                 case "q":
@@ -99,6 +105,26 @@ public class AudioClient {
         if(cs != null) {
             System.out.println("Resume the music");
             cs.resumeStream();
+        }
+    }
+
+    private void volumeUp(){
+        if(cs != null) {
+            try {
+                cs.volumeUp();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void volumeDown(){
+        if(cs != null) {
+            try {
+                cs.volumeDown();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 
