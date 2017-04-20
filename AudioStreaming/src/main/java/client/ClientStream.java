@@ -15,6 +15,7 @@ public class ClientStream implements Runnable {
     private Socket socket;
     private Clip clip;
     private AudioInputStream ais;
+    private AtomicBoolean streamPaused = new AtomicBoolean(false);
     private AtomicBoolean streamStopped = new AtomicBoolean(false);
 
     public ClientStream() {
@@ -39,6 +40,8 @@ public class ClientStream implements Runnable {
 
     public void stopStream() {
         try {
+            this.streamStopped.set(true);
+            this.streamPaused.set(false);
             this.clip.stop();
             this.socket.close();
         } catch (IOException e) {
@@ -54,7 +57,7 @@ public class ClientStream implements Runnable {
             this.clip.start();
             Thread.sleep(100); // given clip.drain a chance to start
             this.clip.drain();
-            while(this.streamStopped.get()) {
+            while(this.streamPaused.get()) {
                 Thread.sleep(100); // given clip.drain a chance to start
                 this.clip.drain();
             }
@@ -76,23 +79,25 @@ public class ClientStream implements Runnable {
     }
 
     public void pauseStream() {
-        this.streamStopped.set(true);
+        this.streamPaused.set(true);
         this.clip.stop();
     }
 
     public void resumeStream() {
         this.clip.start();
-        this.streamStopped.set(false);
+        this.streamPaused.set(false);
     }
 
     public void nextSong(InputStream in) {
-        if (!this.socket.isClosed() && this.socket.isConnected()) {
-            try (OutputStream out = this.socket.getOutputStream()) {
-                PrintWriter pw = new PrintWriter(out, true);
-                pw.println("nextsong");
-                this.play(in);
-            } catch (IOException e) {
-                e.printStackTrace(); // shhh
+        if(!this.streamStopped.get()) {
+            if (!this.socket.isClosed() && this.socket.isConnected()) {
+                try (OutputStream out = this.socket.getOutputStream()) {
+                    PrintWriter pw = new PrintWriter(out, true);
+                    pw.println("nextsong");
+                    this.play(in);
+                } catch (IOException e) {
+                    e.printStackTrace(); // shhh
+                }
             }
         }
     }
