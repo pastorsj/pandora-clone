@@ -85,7 +85,7 @@ public class ClientStream implements Runnable {
         if ((gainControl.getValue() - 1.0f) < gainControl.getMinimum()) {
             System.out.println("Volume is at min");
         } else {
-            System.out.println("Increasing the volume");
+            System.out.println("Decreasing the volume");
             gainControl.setValue(gainControl.getValue() - 1.0f); // Reduce volume by 10 decibels.
         }
     }
@@ -96,7 +96,7 @@ public class ClientStream implements Runnable {
         if ((gainControl.getValue() + 1.0f) > gainControl.getMaximum()) {
             System.out.println("Volume is at max");
         } else {
-            System.out.println("Decreasing the volume");
+            System.out.println("Increasing the volume");
             gainControl.setValue(gainControl.getValue() + 1.0f); // increase volume by 10 decibels.
         }
     }
