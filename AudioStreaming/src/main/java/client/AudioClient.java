@@ -2,8 +2,6 @@ package client; /**
  * Created by sampastoriza on 4/16/17.
  */
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 public class AudioClient {
@@ -41,14 +39,8 @@ public class AudioClient {
                 case "resume":
                     this.resumeSong();
                     break;
-                case "login":
-                    this.login(sc);
-                    break;
                 case "connect":
                     this.connect();
-                    break;
-                case "register":
-                    this.register(sc);
                     break;
                 case "quit":
                 case "exit":
@@ -74,25 +66,6 @@ public class AudioClient {
 
     private void connect() {
         cs = new ClientStream();
-    }
-
-    private void register(Scanner sc) {
-        System.out.println("Registering");
-    }
-
-    private void login(Scanner sc) {
-        System.out.print("Username: ");
-        String username = sc.nextLine();
-        System.out.print("Password: ");
-        String password = sc.nextLine();
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            messageDigest.update(password.getBytes());
-            String encryptedPassword = new String(messageDigest.digest());
-            cs.login(username, encryptedPassword);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
     }
 
     private void stopStream() {

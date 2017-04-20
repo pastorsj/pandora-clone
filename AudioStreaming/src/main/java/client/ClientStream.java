@@ -68,17 +68,6 @@ public class ClientStream implements Runnable {
         }
     }
 
-    public void login(String username, String password) {
-        try (OutputStream out = this.socket.getOutputStream()) {
-            PrintWriter pw = new PrintWriter(out, true);
-            pw.println("login");
-            pw.println(username);
-            pw.println(password);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void pauseStream() {
         this.streamPaused.set(true);
         this.clip.stop();
