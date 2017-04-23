@@ -1,5 +1,6 @@
 package pandora.clone.controller;
 
+import org.neo4j.driver.v1.*;
 import org.springframework.web.bind.annotation.*;
 import pandora.clone.models.User;
 
@@ -12,12 +13,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @RestController
 public class UserController {
 
-    private final AtomicLong counter = new AtomicLong();
 
     @PostMapping("/register")
-    public long register(@RequestBody String username, String password, String email) {
-        User u = new User(counter.getAndIncrement(), username, password, email);
-        return u.getId();
+    public long register(@RequestBody User user) {
+        return user.createUser();
     }
 
     @GetMapping("/login/{username}/{password}")
@@ -27,6 +26,6 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     public User getUser(@PathVariable long id) {
-        return new User(id, "user", "password", "email");
+        return new User("user", "password", "email");
     }
 }
