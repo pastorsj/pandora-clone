@@ -1,6 +1,15 @@
 package pandora.clone.models;
 
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.neo4j.driver.v1.*;
+import pandora.clone.authorization.JwtAuthorization;
+
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
+import java.net.Inet4Address;
+import java.security.Key;
+import java.util.Date;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -20,15 +29,23 @@ public class User {
         this.email = email;
     }
 
-    public long createUser() {
+    public String createUser() {
         Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
         Session session = driver.session();
-        StatementResult result = session.run("create (u:User{username: {username}, password: {password}, email: {email}}) return ID(u) as id;",
+        StatementResult result = session.run("create (u:User{username: {username}, password: {password}, email: {email}}) return ID(u) as id",
                 parameters("username", this.username, "password", this.password, "email", this.email));
 
         Record record = result.next();
 
-        return record.get("id").asLong();
+        String id = record.get("id").asString();
+
+        JwtAuthorization jwt = new JwtAuthorization();
+        return jwt.login(this.username, id);
+    }
+
+    public String login(String username, String password) {
+        JwtAuthorization jwt = new JwtAuthorization();
+        return jwt.login(username, "0");
     }
 
     public String getUsername() {

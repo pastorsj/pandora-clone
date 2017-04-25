@@ -2,6 +2,7 @@ package pandora.clone.controller;
 
 import org.neo4j.driver.v1.*;
 import org.springframework.web.bind.annotation.*;
+import pandora.clone.authorization.JwtAuthorization;
 import pandora.clone.models.User;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,13 +16,14 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public long register(@RequestBody User user) {
+    public String register(@RequestBody User user) {
         return user.createUser();
     }
 
     @GetMapping("/login/{username}/{password}")
-    public boolean login(@PathVariable String username, @PathVariable String password) {
-        return username.equals("pastorsj") && password.equals("password");
+    public String login(@PathVariable String username, @PathVariable String password) {
+        JwtAuthorization jwt = new JwtAuthorization();
+        return jwt.login(username, "0");
     }
 
     @GetMapping("/user/{id}")
