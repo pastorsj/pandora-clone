@@ -1,7 +1,9 @@
 package pandora.clone.authorization;
 
 import io.jsonwebtoken.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -11,6 +13,7 @@ import java.util.Date;
 /**
  * Created by sampastoriza on 4/25/17.
  */
+@Component
 public class JwtTokenUtil {
 
     @Value("${jwt.secret}")
@@ -18,6 +21,9 @@ public class JwtTokenUtil {
 
     @Value("${jwt.expiration}")
     private Long expiration;
+
+    @Value("${jwt.issuer}")
+    private String issuer;
 
     public String createJWT(String id, String issuer, String subject, long ttlMillis) {
 
@@ -66,8 +72,8 @@ public class JwtTokenUtil {
         }
     }
 
-    public String login(String username, String id) {
-        return this.createJWT(id, "http://localhost:8080", username, expiration);
+    public String login(String id, String username) {
+        return this.createJWT(id, issuer, username, expiration);
     }
 
     public String getUsernameFromToken(String token) {
