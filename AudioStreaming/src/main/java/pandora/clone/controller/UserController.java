@@ -1,5 +1,6 @@
 package pandora.clone.controller;
 
+import org.neo4j.driver.v1.exceptions.ClientException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +29,17 @@ public class UserController {
     private UserServices userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        return userService.createUser(user);
+    public String register(@RequestBody User user, HttpServletResponse response) {
+        try {
+            return userService.createUser(user);
+        } catch (ClientException e) {
+            try {
+                response.sendError(500, e.getMessage());
+            } catch (IOException e1) {
+                response.setStatus(500);
+            }
+        }
+        return null;
     }
 
     @GetMapping("/login/{username}/{password}")

@@ -1,6 +1,7 @@
 package pandora.clone.services;
 
 import org.neo4j.driver.v1.*;
+import org.neo4j.driver.v1.exceptions.ClientException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pandora.clone.authorization.JwtTokenUtil;
@@ -18,7 +19,7 @@ public class UserServices {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    public String createUser(User user) {
+    public String createUser(User user) throws ClientException {
         Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
         Session session = driver.session();
         session.run("create (u:User{username: {username}, password: {password}, email: {email}})",
