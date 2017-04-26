@@ -1,7 +1,8 @@
 package pandora.clone.authorization;
 
 import io.jsonwebtoken.*;
-import pandora.clone.models.User;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -11,7 +12,13 @@ import java.util.Date;
 /**
  * Created by sampastoriza on 4/25/17.
  */
-public class JwtAuthorization {
+public class JwtTokenUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private Long expiration;
 
     public String createJWT(String id, String issuer, String subject, long ttlMillis) {
 
@@ -22,7 +29,7 @@ public class JwtAuthorization {
         Date now = new Date(nowMillis);
 
         //We will sign our JWT with our ApiKey secret
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary("changeme");
+        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(secret);
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
         //Let's set the JWT Claims
@@ -48,7 +55,7 @@ public class JwtAuthorization {
         //This line will throw an exception if it is not a signed JWS (as expected)
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(DatatypeConverter.parseBase64Binary("changeme"))
+                    .setSigningKey(DatatypeConverter.parseBase64Binary(secret))
                     .parseClaimsJws(jwt).getBody();
             System.out.println("ID: " + claims.getId());
             System.out.println("Subject: " + claims.getSubject());
@@ -61,6 +68,50 @@ public class JwtAuthorization {
     }
 
     public String login(String username, String id) {
-        return this.createJWT(id, "http://localhost:8080", username, 10000000);
+        return this.createJWT(id, "http://localhost:8080", username, expiration);
+    }
+
+    public String getUsernameFromToken(String token) {
+        String username;
+        try {
+            final Claims claims = getClaimsFromToken(token);
+            username = claims.getSubject();
+        } catch (Exception e) {
+            username = null;
+        }
+        return username;
+    }
+
+    public Date getExpirationDateFromToken(String token) {
+        Date expiration;
+        try {
+            final Claims claims = getClaimsFromToken(token);
+            expiration = claims.getExpiration();
+        } catch (Exception e) {
+            expiration = null;
+        }
+        return expiration;
+    }
+
+    private Claims getClaimsFromToken(String token) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            claims = null;
+        }
+        return claims;
+    }
+
+    private Date generateExpirationDate() {
+        return new Date(System.currentTimeMillis() + expiration * 1000);
+    }
+
+    private Boolean isTokenExpired(String token) {
+        final Date expiration = getExpirationDateFromToken(token);
+        return expiration.before(new Date());
     }
 }

@@ -1,15 +1,7 @@
 package pandora.clone.models;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.neo4j.driver.v1.*;
-import pandora.clone.authorization.JwtAuthorization;
-
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-import java.net.Inet4Address;
-import java.security.Key;
-import java.util.Date;
+import pandora.clone.authorization.JwtTokenUtil;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -39,12 +31,12 @@ public class User {
 
         String id = record.get("id").asString();
 
-        JwtAuthorization jwt = new JwtAuthorization();
+        JwtTokenUtil jwt = new JwtTokenUtil();
         return jwt.login(this.username, id);
     }
 
     public String login(String username, String password) {
-        JwtAuthorization jwt = new JwtAuthorization();
+        JwtTokenUtil jwt = new JwtTokenUtil();
         return jwt.login(username, "0");
     }
 
