@@ -22,6 +22,7 @@ public class AudioClient {
         Scanner sc = new Scanner(System.in);
         while (sc.hasNextLine()) {
             String line = sc.nextLine();
+            line = line.toLowerCase();
             switch (line) {
                 case "help":
                     this.printHelpCommands();
@@ -50,14 +51,27 @@ public class AudioClient {
                 case "volume down":
                     this.volumeDown();
                     break;
+                case "volume":
+                    this.getVolume();
+                    break;
                 case "quit":
                 case "exit":
                 case "q":
                     this.stopStream();
                     return;
                 default:
-                    System.out.println("The command " + line + " does not exist. Type help if you need help");
-                    break;
+                    if (line.startsWith("volume") && line.split(" ").length == 2) {
+                        try {
+                            int volume = Integer.parseInt(line.split(" ")[1]);
+                            this.setVolume(volume);
+                        } catch (NumberFormatException e) {
+                            System.out.println("To set volume please type volume followed by a number between 0 - 100.");
+                        }
+                        break;
+                    } else {
+                        System.out.println("The command " + line + " does not exist. Type help if you need help");
+                        break;
+                    }
             }
             System.out.print("$ ");
 
@@ -107,6 +121,26 @@ public class AudioClient {
         if(cs != null) {
             System.out.println("Resume the music");
             cs.resumeStream();
+        }
+    }
+
+    private void getVolume(){
+        if(cs != null) {
+            try {
+                cs.getVolume();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void setVolume(int val){
+        if(cs != null) {
+            try {
+                cs.setVolume(val);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 

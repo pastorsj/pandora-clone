@@ -28,7 +28,6 @@ public class ClientStream implements Runnable {
     private AudioInputStream ais;
     private AtomicBoolean streamPaused = new AtomicBoolean(false);
     private AtomicBoolean streamStopped = new AtomicBoolean(false);
-
     private HttpRequestFactory requestFactory;
 
     public ClientStream() {
@@ -108,25 +107,50 @@ public class ClientStream implements Runnable {
         this.streamPaused.set(false);
     }
 
+    public void getVolume() {
+        if (clip != null) {
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            System.out.println("The volume is currently " + 100 *((gainControl.getValue() - gainControl.getMinimum()) / (gainControl.getMaximum() - gainControl.getMinimum())));
+        }
+    }
+
+    public void setVolume(int val) {
+        // Check input
+        if (val < 0) {
+            val = 0;
+        } else if ( val > 100) {
+            val = 100;
+        }
+        if (clip != null) {
+            // Change the Volume.
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue((((float) val / (float) 100) * (gainControl.getMaximum() - gainControl.getMinimum())) + gainControl.getMinimum());
+        }
+    }
+
     public void volumeDown() {
-        FloatControl gainControl =
-                (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-        if ((gainControl.getValue() - 1.0f) < gainControl.getMinimum()) {
-            System.out.println("Volume is at min");
-        } else {
-            System.out.println("Decreasing the volume");
-            gainControl.setValue(gainControl.getValue() - 1.0f); // Reduce volume by 10 decibels.
+        if (clip != null) {
+            FloatControl gainControl =
+                    (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            if ((gainControl.getValue() - 1.0f) < gainControl.getMinimum()) {
+                System.out.println("Volume is at min");
+            } else {
+                System.out.println("Decreasing the volume");
+                gainControl.setValue(gainControl.getValue() - 1.0f); // Reduce volume by 10 decibels.
+            }
         }
     }
 
     public void volumeUp() {
-        FloatControl gainControl =
-                (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-        if ((gainControl.getValue() + 1.0f) > gainControl.getMaximum()) {
-            System.out.println("Volume is at max");
-        } else {
-            System.out.println("Increasing the volume");
-            gainControl.setValue(gainControl.getValue() + 1.0f); // increase volume by 10 decibels.
+        if (clip != null) {
+            FloatControl gainControl =
+                    (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            if ((gainControl.getValue() + 1.0f) > gainControl.getMaximum()) {
+                System.out.println("Volume is at max");
+            } else {
+                System.out.println("Increasing the volume");
+                gainControl.setValue(gainControl.getValue() + 1.0f); // increase volume by 10 decibels.
+            }
         }
     }
 
