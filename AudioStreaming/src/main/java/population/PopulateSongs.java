@@ -56,6 +56,7 @@ public class PopulateSongs {
             }
         }
         session.run("create index on :Song(genre)");
+        session.run("create constraint on (u:User) assert u.username is unique");
         session.close();
         driver.close();
     }

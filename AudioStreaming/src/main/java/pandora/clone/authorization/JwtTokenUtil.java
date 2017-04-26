@@ -1,14 +1,18 @@
 package pandora.clone.authorization;
 
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.neo4j.driver.v1.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.util.Date;
+
+import static org.neo4j.driver.v1.Values.parameters;
 
 /**
  * Created by sampastoriza on 4/25/17.
@@ -62,18 +66,34 @@ public class JwtTokenUtil {
             Claims claims = Jwts.parser()
                     .setSigningKey(DatatypeConverter.parseBase64Binary(secret))
                     .parseClaimsJws(jwt).getBody();
-            System.out.println("ID: " + claims.getId());
-            System.out.println("Subject: " + claims.getSubject());
-            System.out.println("Issuer: " + claims.getIssuer());
-            System.out.println("Expiration: " + claims.getExpiration());
             return true;
         } catch (SignatureException e) {
+            return false;
+        } catch (ExpiredJwtException e) {
             return false;
         }
     }
 
-    public String login(String id, String username) {
-        return this.createJWT(id, issuer, username, expiration);
+    public String login(String username, String password) {
+        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
+        Session session = driver.session();
+        StatementResult result = session.run("MATCH (u:User) WHERE u.username={username} and u.password={password} return ID(u) as id",
+                parameters("username", username, "password", password));
+
+        if (!result.hasNext()) {
+            return null;
+        }
+
+        Record record = result.peek();
+
+        long id = record.get("id").asLong();
+
+        System.out.println("Id " + id);
+
+        session.close();
+        driver.close();
+
+        return this.createJWT(Long.toString(id), issuer, username, expiration);
     }
 
     public String getUsernameFromToken(String token) {

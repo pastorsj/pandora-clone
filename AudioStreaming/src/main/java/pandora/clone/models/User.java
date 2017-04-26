@@ -1,5 +1,7 @@
 package pandora.clone.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.neo4j.driver.v1.*;
 import pandora.clone.authorization.JwtTokenUtil;
 
@@ -9,7 +11,9 @@ import static org.neo4j.driver.v1.Values.parameters;
  * Created by sampastoriza on 4/21/17.
  */
 public class User {
+    private long id;
     private String username;
+    @JsonIgnore
     private String password;
     private String email;
 
@@ -21,29 +25,11 @@ public class User {
         this.email = email;
     }
 
-    public String createUser() {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
-        Session session = driver.session();
-        StatementResult result = session.run("create (u:User{username: {username}, password: {password}, email: {email}}) return ID(u) as id",
-                parameters("username", this.username, "password", this.password, "email", this.email));
-
-        Record record = result.next();
-
-        long id = record.get("id").asLong();
-
-        JwtTokenUtil jwt = new JwtTokenUtil();
-        return jwt.login(this.username, Long.toString(id));
-    }
-
-    public String login(String username, String password) {
-        JwtTokenUtil jwt = new JwtTokenUtil();
-        return jwt.login(username, "0");
-    }
-
     public String getUsername() {
         return username;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -52,15 +38,24 @@ public class User {
         return email;
     }
 
+    public long getId() {
+        return id;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
+    @JsonProperty
     public void setPassword(String password) {
         this.password = password;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }
