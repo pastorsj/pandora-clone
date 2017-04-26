@@ -29,10 +29,10 @@ public class User {
 
         Record record = result.next();
 
-        String id = record.get("id").asString();
+        long id = record.get("id").asLong();
 
         JwtTokenUtil jwt = new JwtTokenUtil();
-        return jwt.login(this.username, id);
+        return jwt.login(this.username, Long.toString(id));
     }
 
     public String login(String username, String password) {
