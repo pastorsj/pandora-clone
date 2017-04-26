@@ -20,7 +20,7 @@ import static org.neo4j.driver.v1.Values.parameters;
 
 public class PopulateSongs {
 
-    private String songsDir = "./AudioStreaming/songs";
+    private String songsDir = "./songs";
 
     public static void main(String[] args) {
         PopulateSongs ps = new PopulateSongs();

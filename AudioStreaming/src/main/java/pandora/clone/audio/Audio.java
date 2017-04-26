@@ -73,9 +73,7 @@ public class Audio {
     public byte[] playSong(Record record) {
         try {
             String filepath = record.get("filepath").asString();
-            System.out.println("Filepath: " + filepath);
             File file = new File(filepath);
-            System.out.println(file.exists());
             AudioInputStream mp3Stream = AudioSystem.getAudioInputStream(file);
             AudioFormat sourceFormat = mp3Stream.getFormat();
             AudioFormat convertFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
