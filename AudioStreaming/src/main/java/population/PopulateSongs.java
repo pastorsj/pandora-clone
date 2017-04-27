@@ -20,7 +20,7 @@ import static org.neo4j.driver.v1.Values.parameters;
 
 public class PopulateSongs {
 
-    private String songsDir = "./AudioStreaming/songs";
+    private String songsDir = "./songs";
 
     public static void main(String[] args) {
         PopulateSongs ps = new PopulateSongs();
@@ -56,6 +56,7 @@ public class PopulateSongs {
             }
         }
         session.run("create index on :Song(genre)");
+        session.run("create constraint on (u:User) assert u.username is unique");
         session.close();
         driver.close();
     }

@@ -1,9 +1,16 @@
 package pandora.clone.controller;
 
+import org.neo4j.driver.v1.exceptions.ClientException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import pandora.clone.authorization.JwtTokenUtil;
 import pandora.clone.models.User;
+import pandora.clone.services.UserServices;
 
-import java.util.concurrent.atomic.AtomicLong;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Created by sampastoriza on 4/21/17.
@@ -12,21 +19,64 @@ import java.util.concurrent.atomic.AtomicLong;
 @RestController
 public class UserController {
 
-    private final AtomicLong counter = new AtomicLong();
+    @Value("${jwt.header}")
+    private String tokenHeader;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private UserServices userService;
 
     @PostMapping("/register")
-    public long register(@RequestBody String username, String password, String email) {
-        User u = new User(counter.getAndIncrement(), username, password, email);
-        return u.getId();
+    public String register(@RequestBody User user, HttpServletResponse response) {
+        try {
+            return userService.createUser(user);
+        } catch (ClientException e) {
+            try {
+                response.sendError(500, e.getMessage());
+            } catch (IOException e1) {
+                response.setStatus(500);
+            }
+        }
+        return null;
     }
 
     @GetMapping("/login/{username}/{password}")
-    public boolean login(@PathVariable String username, @PathVariable String password) {
-        return username.equals("pastorsj") && password.equals("password");
+    public String login(@PathVariable String username, @PathVariable String password, HttpServletResponse response) {
+       String jwt = jwtTokenUtil.login(username, password);
+       if(jwt == null) {
+           response.setStatus(403);
+           return null;
+       }
+       return jwt;
     }
 
     @GetMapping("/user/{id}")
-    public User getUser(@PathVariable long id) {
-        return new User(id, "user", "password", "email");
+    public User getUser(@PathVariable long id, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            String token = request.getHeader(tokenHeader);
+            token = token.substring(7);
+            boolean isValid = jwtTokenUtil.parseJWT(token);
+            if(!isValid) {
+                response.setStatus(403);
+                return null;
+            } else {
+                User user = userService.retrieveUser(id);
+                if(user == null) {
+                    try {
+                        response.sendError(404, "User does not exist");
+                        return null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return user;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(403);
+            return null;
+        }
     }
 }
