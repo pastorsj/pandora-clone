@@ -1,6 +1,10 @@
-package pandora.clone.audio;
+package pandora.clone.services;
 
 import org.neo4j.driver.v1.*;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 import pandora.clone.models.Song;
 
 import javax.sound.sampled.*;
@@ -16,17 +20,32 @@ import static org.neo4j.driver.v1.Values.parameters;
 /**
  * Created by sampastoriza on 4/25/17.
  */
-public class Audio {
+@Component
+public class MusicServices implements InitializingBean {
 
     private List<Record> songs;
 
-    public Audio() {
+    @Value("${neo4j.password}")
+    private String neo4jPassword;
+
+    @Value("${neo4j.username}")
+    private String neo4jUsername;
+
+    @Value("${neo4j.server}")
+    private String neo4jServer;
+
+    @Autowired
+    public MusicServices() {
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
         this.songs = new ArrayList<>();
         this.retrieveSongs();
     }
 
     public Song retrieveSong(int id) {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
         Session session = driver.session();
         StatementResult result = session.run("match (s:Song) where ID(s) = {id} return s.artist as artist, s.year as year," +
                 "s.album as album, s.genre as genre, s.title as title, s.track as track", parameters("id", id));
@@ -48,7 +67,7 @@ public class Audio {
     }
 
     public void retrieveSongs() {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
         Session session = driver.session();
         StatementResult result = session.run("MATCH (s:Song) " +
                 "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
@@ -63,10 +82,13 @@ public class Audio {
     }
 
     public byte[] playSong(long id) {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
         Session session = driver.session();
         StatementResult result = session.run("match (s:Song) where ID(s) = {id} return s.filepath as filepath", parameters("id", id));
         Record record = result.peek();
+
+        session.close();
+        driver.close();
         return this.playSong(record);
     }
 
@@ -121,5 +143,20 @@ public class Audio {
         int nextSongIndex = r.nextInt(this.songs.size());
         Record song = this.songs.get(nextSongIndex);
         return this.playSong(song);
+    }
+
+    public List<String> getGenres() {
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
+        Session session = driver.session();
+        StatementResult result = session.run("match (s:Song) return distinct s.genre as genre");
+
+        List<String> genres = new ArrayList<>();
+        while(result.hasNext()) {
+            Record record = result.next();
+
+            String genre = record.get("genre").asString();
+            genres.add(genre);
+        }
+        return genres;
     }
 }
