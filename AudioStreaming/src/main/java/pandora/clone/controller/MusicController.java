@@ -60,8 +60,18 @@ public class MusicController {
     }
 
     @GetMapping("genre/{genre}")
-    public ResponseEntity<Song> playGenre(@PathVariable String genre) {
-        return new ResponseEntity<>(musicServices.playByGenre(genre), HttpStatus.OK);
+    public ResponseEntity<Song> playGenre(@PathVariable String genre, HttpServletResponse response) {
+        Song song = musicServices.playByGenre(genre);
+        if (song != null) {
+            return new ResponseEntity<>(song, HttpStatus.OK);
+        } else {
+            try {
+                response.sendError(404, "Genre does not exist");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
 

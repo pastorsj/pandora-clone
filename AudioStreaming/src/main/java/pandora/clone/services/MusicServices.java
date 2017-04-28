@@ -172,6 +172,12 @@ public class MusicServices implements InitializingBean {
 
         List<Record> songList = result.list();
 
+        if (songList.size() == 0) {
+            System.out.println(songList.toString());
+            System.out.println("Song List is Empty!!!");
+            return null;
+        }
+
         Random r = new Random();
         int nextSongIndex = r.nextInt(songList.size());
         Record song = songList.get(nextSongIndex);
