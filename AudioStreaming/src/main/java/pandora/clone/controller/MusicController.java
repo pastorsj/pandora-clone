@@ -58,5 +58,10 @@ public class MusicController {
     public ResponseEntity<List> getGenres() {
         return new ResponseEntity<>(musicServices.getGenres(), HttpStatus.OK);
     }
+
+    @GetMapping("genre/{genre}")
+    public ResponseEntity<Song> playGenre(@PathVariable String genre) {
+        return new ResponseEntity<>(musicServices.playByGenre(genre), HttpStatus.OK);
+    }
 }
 

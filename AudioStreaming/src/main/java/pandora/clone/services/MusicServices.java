@@ -81,7 +81,7 @@ public class MusicServices implements InitializingBean {
         driver.close();
     }
 
-    public byte[] playSong(long id) {
+    public byte[] playSong(int id) {
         Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
         Session session = driver.session();
         StatementResult result = session.run("match (s:Song) where ID(s) = {id} return s.filepath as filepath", parameters("id", id));
@@ -157,6 +157,37 @@ public class MusicServices implements InitializingBean {
             String genre = record.get("genre").asString();
             genres.add(genre);
         }
+
+        session.close();
+        driver.close();
         return genres;
+    }
+
+    public Song playByGenre(String genre) {
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
+        Session session = driver.session();
+        StatementResult result = session.run("match (s:Song) where toUpper(s.genre) = toUpper({genre})" +
+                "return ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("genre", genre));
+
+        List<Record> songList = result.list();
+
+        Random r = new Random();
+        int nextSongIndex = r.nextInt(songList.size());
+        Record song = songList.get(nextSongIndex);
+
+        int id = song.get("id").asInt();
+
+        Song s = new Song(
+                id,
+                song.get("artist").asString(),
+                song.get("year").asString(),
+                song.get("album").asString(),
+                song.get("genre").asString(),
+                song.get("title").asString(),
+                song.get("track").asString());
+
+        this.playSong(id);
+        return s;
     }
 }
