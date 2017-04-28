@@ -54,6 +54,12 @@ public class AudioClient {
                 case "volume":
                     this.getVolume();
                     break;
+                case "genres":
+                    this.getGenres();
+                    break;
+                case "play genre":
+                    this.playGenres(sc);
+                    break;
                 case "quit":
                 case "exit":
                 case "q":
@@ -77,6 +83,15 @@ public class AudioClient {
 
         }
         System.out.println("Client: end");
+    }
+
+    private void getGenres() {
+        cs.getGenres();
+    }
+
+    private void playGenres(Scanner sc) {
+        String genre = sc.nextLine();
+        cs.playGenre(genre);
     }
 
     private void playStream() {
