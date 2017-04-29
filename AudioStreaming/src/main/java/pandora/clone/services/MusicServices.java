@@ -196,4 +196,11 @@ public class MusicServices implements InitializingBean {
         this.playSong(id);
         return s;
     }
+
+    public void likeSong(Integer id, String username) {
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
+        Session session = driver.session();
+        session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
+                parameters("id", id, "username", username));
+    }
 }
