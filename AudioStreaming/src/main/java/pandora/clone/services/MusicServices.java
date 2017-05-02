@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
 import pandora.clone.models.Song;
+import redis.clients.jedis.Jedis;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -23,7 +24,8 @@ import static org.neo4j.driver.v1.Values.parameters;
 @Component
 public class MusicServices implements InitializingBean {
 
-    private List<Record> songs;
+    private Session session;
+    private Jedis jedis;
 
     @Value("${neo4j.password}")
     private String neo4jPassword;
@@ -34,67 +36,22 @@ public class MusicServices implements InitializingBean {
     @Value("${neo4j.server}")
     private String neo4jServer;
 
+    @Value("${redis.server}")
+    private String redisServer;
+
     @Autowired
     public MusicServices() {
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.songs = new ArrayList<>();
-        this.retrieveSongs();
-    }
-
-    public Song retrieveSong(int id) {
         Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        StatementResult result = session.run("match (s:Song) where ID(s) = {id} return s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track", parameters("id", id));
-
-        Record record = result.peek();
-
-        Song s = new Song(id,
-                record.get("artist").asString(),
-                record.get("year").asString(),
-                record.get("album").asString(),
-                record.get("genre").asString(),
-                record.get("title").asString(),
-                record.get("track").asString());
-
-        session.close();
-        driver.close();
-
-        return s;
+        this.session = driver.session();
+        this.jedis = new Jedis(redisServer);
     }
 
-    public void retrieveSongs() {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        StatementResult result = session.run("MATCH (s:Song) " +
-                "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track");
-        while ( result.hasNext() )
-        {
-            Record record = result.next();
-            this.songs.add(record);
-        }
-        session.close();
-        driver.close();
-    }
-
-    public byte[] playSong(int id) {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        StatementResult result = session.run("match (s:Song) where ID(s) = {id} return s.filepath as filepath", parameters("id", id));
-        Record record = result.peek();
-
-        session.close();
-        driver.close();
-        return this.playSong(record);
-    }
-
-    public byte[] playSong(Record record) {
+    public byte[] playSong(String filepath) {
         try {
-            String filepath = record.get("filepath").asString();
             File file = new File(filepath);
             AudioInputStream mp3Stream = AudioSystem.getAudioInputStream(file);
             AudioFormat sourceFormat = mp3Stream.getFormat();
@@ -122,33 +79,34 @@ public class MusicServices implements InitializingBean {
         return null;
     }
 
-    public Song getRandomSong() {
-        Random r = new Random();
-        int nextSongIndex = r.nextInt(this.songs.size());
-        Record record = this.songs.get(nextSongIndex);
+    public Song playNextSong(String username, String genre) {
+        int songId = Integer.parseInt(this.jedis.spop(username));
+        if (songId < 1) {
+            this.playByGenre(username, genre);
+        }
 
-        Song s = new Song(record.get("id").asInt(),
-                record.get("artist").asString(),
-                record.get("year").asString(),
-                record.get("album").asString(),
-                record.get("genre").asString(),
-                record.get("title").asString(),
-                record.get("track").asString());
+        StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
+                "return s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", songId));
 
-        return s;
-    }
+        if (result.hasNext()) {
+            Record record = result.next();
+            Song s = new Song(songId,
+                    record.get("artist").asString(),
+                    record.get("year").asString(),
+                    record.get("album").asString(),
+                    record.get("genre").asString(),
+                    record.get("title").asString(),
+                    record.get("track").asString());
 
-    public byte[] playNextSong() {
-        Random r = new Random();
-        int nextSongIndex = r.nextInt(this.songs.size());
-        Record song = this.songs.get(nextSongIndex);
-        return this.playSong(song);
+            this.playSong(record.get("filepath").asString());
+            return s;
+        }
+        return null;
     }
 
     public List<String> getGenres() {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        StatementResult result = session.run("match (s:Song) return distinct s.genre as genre");
+        StatementResult result = this.session.run("match (s:Song) return distinct s.genre as genre");
 
         List<String> genres = new ArrayList<>();
         while(result.hasNext()) {
@@ -157,44 +115,20 @@ public class MusicServices implements InitializingBean {
             String genre = record.get("genre").asString();
             genres.add(genre);
         }
-
-        session.close();
-        driver.close();
         return genres;
     }
 
-    public Song playByGenre(String genre) {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        StatementResult result = session.run("match (s:Song) where toUpper(s.genre) = toUpper({genre})" +
-                "return ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("genre", genre));
+    public Song playByGenre(String username, String genre) {
+        this.jedis.del(username);
 
-        List<Record> songList = result.list();
+        StatementResult result = this.session.run("match (s:Song) where toUpper(s.genre) = toUpper({genre})" +
+                "return ID(s) as id;", parameters("genre", genre));
 
-        if (songList.size() == 0) {
-            System.out.println(songList.toString());
-            System.out.println("Song List is Empty!!!");
-            return null;
-        }
+        result.list().stream().forEach(record -> {
+            jedis.sadd(username, Integer.toString(record.get("id").asInt()));
+        });
 
-        Random r = new Random();
-        int nextSongIndex = r.nextInt(songList.size());
-        Record song = songList.get(nextSongIndex);
-
-        int id = song.get("id").asInt();
-
-        Song s = new Song(
-                id,
-                song.get("artist").asString(),
-                song.get("year").asString(),
-                song.get("album").asString(),
-                song.get("genre").asString(),
-                song.get("title").asString(),
-                song.get("track").asString());
-
-        this.playSong(id);
-        return s;
+        return this.playNextSong(username, genre);
     }
 
     public void likeSong(Integer id, String username) {
@@ -202,5 +136,43 @@ public class MusicServices implements InitializingBean {
         Session session = driver.session();
         session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
                 parameters("id", id, "username", username));
+    }
+
+    public void populateRandomPlaylist(String username) {
+        StatementResult result = this.session.run("MATCH (s:Song) " +
+                "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track");
+
+        result.list().stream().forEach(record -> {
+            jedis.sadd(username, record.get("id").asString());
+        });
+
+        this.playRandomSong(username);
+    }
+
+    public Song playRandomSong(String username) {
+        int songId = Integer.parseInt(this.jedis.spop(username));
+
+        if (songId < 1) {
+            this.populateRandomPlaylist(username);
+        }
+        StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
+                "return s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", songId));
+
+        if (result.hasNext()) {
+            Record record = result.next();
+            Song s = new Song(songId,
+                    record.get("artist").asString(),
+                    record.get("year").asString(),
+                    record.get("album").asString(),
+                    record.get("genre").asString(),
+                    record.get("title").asString(),
+                    record.get("track").asString());
+
+            this.playSong(record.get("filepath").asString());
+            return s;
+        }
+        return null;
     }
 }

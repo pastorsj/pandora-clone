@@ -12,6 +12,7 @@ import pandora.clone.authorization.JwtTokenUtil;
 import pandora.clone.models.User;
 import pandora.clone.services.MusicServices;
 import pandora.clone.models.Song;
+import pandora.clone.services.UserServices;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -35,33 +36,26 @@ public class MusicController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @GetMapping("/song/random")
-    public void playRandom(HttpServletResponse response) {
-        byte[] bytes = musicServices.playNextSong();
-        try {
-            ServletOutputStream sos = response.getOutputStream();
-            sos.write(bytes, 0, bytes.length);
-            sos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    @Autowired
+    UserServices userServices;
 
-    @GetMapping("/song/play/{id}")
-    public void playSong(@PathVariable Integer id, HttpServletResponse response) {
-        byte[] bytes = musicServices.playSong(id);
-        try {
-            ServletOutputStream sos = response.getOutputStream();
-            sos.write(bytes, 0, bytes.length);
-            sos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    @GetMapping("/play/song/random")
+    public ResponseEntity<Song> play(HttpServletRequest request, HttpServletResponse response) {
+        String username = userServices.retrieveToken(request, response, tokenHeader);
+        if (username == null) {
+            return null;
         }
-    }
-
-    @GetMapping("/song/play/random")
-    public Song play() {
-        return musicServices.getRandomSong();
+        Song song = musicServices.playRandomSong(username);
+        if (song != null) {
+            return new ResponseEntity<>(song, HttpStatus.OK);
+        } else {
+            try {
+                response.sendError(500, "An issue has occurred on the server side");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("genres")
@@ -69,9 +63,13 @@ public class MusicController {
         return new ResponseEntity<>(musicServices.getGenres(), HttpStatus.OK);
     }
 
-    @GetMapping("genre/{genre}")
-    public ResponseEntity<Song> playGenre(@PathVariable String genre, HttpServletResponse response) {
-        Song song = musicServices.playByGenre(genre);
+    @GetMapping("/play/genre/{genre}")
+    public ResponseEntity<Song> playGenre(@PathVariable String genre, HttpServletRequest request, HttpServletResponse response) {
+        String username = userServices.retrieveToken(request, response, tokenHeader);
+        if (username == null) {
+            return null;
+        }
+        Song song = musicServices.playByGenre(username, genre);
         if (song != null) {
             return new ResponseEntity<>(song, HttpStatus.OK);
         } else {
@@ -84,33 +82,14 @@ public class MusicController {
         }
     }
 
-    @GetMapping("/song/like/{id}")
+    @GetMapping("/like/song/{id}")
     public ResponseEntity<String> likeSong(@PathVariable Integer id, HttpServletRequest request, HttpServletResponse response) {
-        try {
-            String token = request.getHeader(tokenHeader);
-            token = token.substring(7);
-            boolean isValid = jwtTokenUtil.parseJWT(token);
-            if(!isValid) {
-                response.setStatus(403);
-                return null;
-            } else {
-                String username= jwtTokenUtil.getUsernameFromToken(token);
-                if(username == null) {
-                    try {
-                        response.sendError(404, "User does not exist");
-                        return null;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                musicServices.likeSong(id, username);
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(403);
+        String username = userServices.retrieveToken(request, response, tokenHeader);
+        if (username == null) {
             return null;
         }
+        musicServices.likeSong(id, username);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
 

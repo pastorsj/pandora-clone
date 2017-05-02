@@ -3,9 +3,16 @@ package pandora.clone.services;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import pandora.clone.authorization.JwtTokenUtil;
 import pandora.clone.models.User;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -54,5 +61,26 @@ public class UserServices {
         driver.close();
 
         return user;
+    }
+
+    public String retrieveToken(HttpServletRequest request, HttpServletResponse response, String tokenHeader) {
+        String token = request.getHeader(tokenHeader);
+        token = token.substring(7);
+        boolean isValid = jwtTokenUtil.parseJWT(token);
+        if(!isValid) {
+            response.setStatus(403);
+            return null;
+        } else {
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            if(username == null) {
+                try {
+                    response.sendError(404, "User does not exist");
+                    return null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return username;
+        }
     }
 }
