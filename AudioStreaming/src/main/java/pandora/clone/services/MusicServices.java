@@ -3,8 +3,8 @@ package pandora.clone.services;
 import org.neo4j.driver.v1.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import pandora.clone.models.Song;
 import redis.clients.jedis.Jedis;
 
@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -80,18 +79,21 @@ public class MusicServices implements InitializingBean {
     }
 
     public Song playNextSong(String username, String genre) {
-        int songId = Integer.parseInt(this.jedis.spop(username));
-        if (songId < 1) {
+        String songId = this.jedis.spop(username);
+
+        if (songId == null) {
             this.playByGenre(username, genre);
         }
 
+        int id = Integer.parseInt(songId);
+
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", songId));
+                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", id));
 
         if (result.hasNext()) {
             Record record = result.next();
-            Song s = new Song(songId,
+            Song s = new Song(id,
                     record.get("artist").asString(),
                     record.get("year").asString(),
                     record.get("album").asString(),
@@ -151,18 +153,21 @@ public class MusicServices implements InitializingBean {
     }
 
     public Song playRandomSong(String username) {
-        int songId = Integer.parseInt(this.jedis.spop(username));
+        String songId = this.jedis.spop(username);
 
-        if (songId < 1) {
+        if (songId == null) {
             this.populateRandomPlaylist(username);
         }
+
+        int id = Integer.parseInt(songId);
+
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", songId));
+                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", id));
 
         if (result.hasNext()) {
             Record record = result.next();
-            Song s = new Song(songId,
+            Song s = new Song(id,
                     record.get("artist").asString(),
                     record.get("year").asString(),
                     record.get("album").asString(),
@@ -172,6 +177,17 @@ public class MusicServices implements InitializingBean {
 
             this.playSong(record.get("filepath").asString());
             return s;
+        }
+        return null;
+    }
+
+    public byte[] playSong(Integer id) {
+        StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
+                "return s.filepath as filepath;", parameters("id", id));
+
+        if (result.hasNext()) {
+            Record record = result.next();
+            return this.playSong(record.get("filepath").asString());
         }
         return null;
     }

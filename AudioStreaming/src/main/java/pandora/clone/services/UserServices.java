@@ -3,16 +3,15 @@ package pandora.clone.services;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import pandora.clone.authorization.JwtTokenUtil;
 import pandora.clone.models.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -29,8 +28,19 @@ public class UserServices {
     public String createUser(User user) throws ClientException {
         Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
         Session session = driver.session();
+
+        String password = user.getPassword();
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        messageDigest.update(password.getBytes());
+        String encryptedPassword = new String(messageDigest.digest());
+
         session.run("create (u:User{username: {username}, password: {password}, email: {email}})",
-                parameters("username", user.getUsername(), "password", user.getPassword(), "email", user.getEmail()));
+                parameters("username", user.getUsername(), "password", encryptedPassword, "email", user.getEmail()));
 
         session.close();
         driver.close();
@@ -65,6 +75,9 @@ public class UserServices {
 
     public String retrieveToken(HttpServletRequest request, HttpServletResponse response, String tokenHeader) {
         String token = request.getHeader(tokenHeader);
+
+        System.out.println(token);
+
         token = token.substring(7);
         boolean isValid = jwtTokenUtil.parseJWT(token);
         if(!isValid) {
