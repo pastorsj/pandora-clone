@@ -100,10 +100,16 @@ public class AudioClient {
     }
 
     private void getGenres() {
+        if (cs == null) {
+            this.connect(this.jwt);
+        }
         cs.getGenres();
     }
 
     private void playGenres(Scanner sc) {
+        if (cs == null) {
+            this.connect(this.jwt);
+        }
         String genre = sc.nextLine();
         cs.playGenre(genre);
     }
@@ -199,7 +205,6 @@ public class AudioClient {
             return;
         }
         cs.stopStream();
-        cs = null;
         try {
             t.join();
         } catch (InterruptedException e) {

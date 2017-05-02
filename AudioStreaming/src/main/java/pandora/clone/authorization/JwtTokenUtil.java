@@ -69,6 +69,8 @@ public class JwtTokenUtil {
             return false;
         } catch (ExpiredJwtException e) {
             return false;
+        } catch (MalformedJwtException e) {
+            return false;
         }
     }
 

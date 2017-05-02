@@ -141,12 +141,14 @@ public class MusicServices implements InitializingBean {
     }
 
     public void populateRandomPlaylist(String username) {
+        this.jedis.del(username);
+
         StatementResult result = this.session.run("MATCH (s:Song) " +
                 "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
                 "s.album as album, s.genre as genre, s.title as title, s.track as track");
 
         result.list().stream().forEach(record -> {
-            jedis.sadd(username, record.get("id").asString());
+            jedis.sadd(username, Integer.toString(record.get("id").asInt()));
         });
 
         this.playRandomSong(username);
@@ -158,6 +160,8 @@ public class MusicServices implements InitializingBean {
         if (songId == null) {
             this.populateRandomPlaylist(username);
         }
+
+        System.out.println("songId " + songId);
 
         int id = Integer.parseInt(songId);
 
