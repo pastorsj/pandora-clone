@@ -224,7 +224,7 @@ public class ClientStream implements Runnable {
     public void nextSong() {
         if (!this.streamStopped.get()) {
             try {
-                this.play(new GenericUrl(new URL("http://127.0.0.1:" + 8080 + "/song/play/random")));
+                this.play(new GenericUrl(new URL("http://127.0.0.1:" + 8080 + "/play/song/random")));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
