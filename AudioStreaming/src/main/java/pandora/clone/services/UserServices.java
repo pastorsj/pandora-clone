@@ -1,11 +1,14 @@
 package pandora.clone.services;
 
 import org.neo4j.driver.v1.*;
+import org.neo4j.driver.v1.Value;
 import org.neo4j.driver.v1.exceptions.ClientException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Component;
 import pandora.clone.authorization.JwtTokenUtil;
 import pandora.clone.models.User;
+import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,15 +23,33 @@ import static org.neo4j.driver.v1.Values.parameters;
  */
 
 @Component
-public class UserServices {
+public class UserServices implements InitializingBean {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    public String createUser(User user) throws ClientException {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
-        Session session = driver.session();
+    private Session session;
 
+    @org.springframework.beans.factory.annotation.Value("${neo4j.password}")
+    private String neo4jPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${neo4j.username}")
+    private String neo4jUsername;
+
+    @org.springframework.beans.factory.annotation.Value("${neo4j.server}")
+    private String neo4jServer;
+
+    @Autowired
+    public UserServices() {
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
+        this.session = driver.session();
+    }
+
+    public String createUser(User user) throws ClientException {
         String password = user.getPassword();
         MessageDigest messageDigest = null;
         try {
@@ -39,19 +60,14 @@ public class UserServices {
         messageDigest.update(password.getBytes());
         String encryptedPassword = new String(messageDigest.digest());
 
-        session.run("create (u:User{username: {username}, password: {password}, email: {email}})",
+        this.session.run("create (u:User{username: {username}, password: {password}, email: {email}})",
                 parameters("username", user.getUsername(), "password", encryptedPassword, "email", user.getEmail()));
 
-        session.close();
-        driver.close();
-
-        return jwtTokenUtil.login(user.getUsername(), user.getPassword());
+        return jwtTokenUtil.login(user.getUsername(), encryptedPassword);
     }
 
     public User retrieveUser(long id) {
-        Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "database"));
-        Session session = driver.session();
-        StatementResult result = session.run("match (u:User) where ID(u)={id} return u.username as username, u.email as email",
+        StatementResult result = this.session.run("match (u:User) where ID(u)={id} return u.username as username, u.email as email",
                 parameters("id", id));
 
         if(!result.hasNext()) {
@@ -66,9 +82,6 @@ public class UserServices {
         user.setUsername(username);
         user.setEmail(email);
         user.setId(id);
-
-        session.close();
-        driver.close();
 
         return user;
     }

@@ -35,15 +35,17 @@ public class UserController {
     @PostMapping("/register")
     public String register(@RequestBody User user, HttpServletResponse response) {
         try {
-            return userService.createUser(user);
+            String jwt = userService.createUser(user);
+            System.out.println("JWT " + jwt);
+            return jwt;
         } catch (ClientException e) {
             try {
                 response.sendError(500, e.getMessage());
             } catch (IOException e1) {
                 response.setStatus(500);
             }
+            return null;
         }
-        return null;
     }
 
     @GetMapping("/login")

@@ -79,7 +79,7 @@ public class MusicController {
         if (username == null) {
             return null;
         }
-        Song song = musicServices.playByGenre(username, genre);
+        Song song = musicServices.playSongByGenre(username, genre);
         if (song != null) {
             return new ResponseEntity<>(song, HttpStatus.OK);
         } else {

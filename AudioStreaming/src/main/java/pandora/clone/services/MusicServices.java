@@ -78,11 +78,24 @@ public class MusicServices implements InitializingBean {
         return null;
     }
 
-    public Song playNextSong(String username, String genre) {
+    public List<String> getGenres() {
+        StatementResult result = this.session.run("match (s:Song) return distinct s.genre as genre");
+
+        List<String> genres = new ArrayList<>();
+        while(result.hasNext()) {
+            Record record = result.next();
+
+            String genre = record.get("genre").asString();
+            genres.add(genre);
+        }
+        return genres;
+    }
+
+    public Song playSongByGenre(String username, String genre) {
         String songId = this.jedis.spop(username);
 
         if (songId == null) {
-            this.playByGenre(username, genre);
+            this.populateByGenre(username, genre);
         }
 
         int id = Integer.parseInt(songId);
@@ -107,20 +120,7 @@ public class MusicServices implements InitializingBean {
         return null;
     }
 
-    public List<String> getGenres() {
-        StatementResult result = this.session.run("match (s:Song) return distinct s.genre as genre");
-
-        List<String> genres = new ArrayList<>();
-        while(result.hasNext()) {
-            Record record = result.next();
-
-            String genre = record.get("genre").asString();
-            genres.add(genre);
-        }
-        return genres;
-    }
-
-    public Song playByGenre(String username, String genre) {
+    public Song populateByGenre(String username, String genre) {
         this.jedis.del(username);
 
         StatementResult result = this.session.run("match (s:Song) where toUpper(s.genre) = toUpper({genre})" +
@@ -130,28 +130,7 @@ public class MusicServices implements InitializingBean {
             jedis.sadd(username, Integer.toString(record.get("id").asInt()));
         });
 
-        return this.playNextSong(username, genre);
-    }
-
-    public void likeSong(Integer id, String username) {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
-                parameters("id", id, "username", username));
-    }
-
-    public void populateRandomPlaylist(String username) {
-        this.jedis.del(username);
-
-        StatementResult result = this.session.run("MATCH (s:Song) " +
-                "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track");
-
-        result.list().stream().forEach(record -> {
-            jedis.sadd(username, Integer.toString(record.get("id").asInt()));
-        });
-
-        this.playRandomSong(username);
+        return this.playSongByGenre(username, genre);
     }
 
     public Song playRandomSong(String username) {
@@ -183,6 +162,27 @@ public class MusicServices implements InitializingBean {
             return s;
         }
         return null;
+    }
+
+    public Song populateRandomPlaylist(String username) {
+        this.jedis.del(username);
+
+        StatementResult result = this.session.run("MATCH (s:Song) " +
+                "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track");
+
+        result.list().stream().forEach(record -> {
+            jedis.sadd(username, Integer.toString(record.get("id").asInt()));
+        });
+
+        return this.playRandomSong(username);
+    }
+
+    public void likeSong(Integer id, String username) {
+        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
+        Session session = driver.session();
+        session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
+                parameters("id", id, "username", username));
     }
 
     public byte[] playSong(Integer id) {
