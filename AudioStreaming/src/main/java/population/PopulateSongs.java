@@ -37,14 +37,16 @@ public class PopulateSongs {
                     Mp3File mp3file = new Mp3File(file.getAbsolutePath());
                     if (mp3file.hasId3v1Tag()) {
                         ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-                        session.run("create (s: Song{track: {track}, artist: {artist}, title: {title}, album: {album}, year: {year}, genre: {genre}, filepath: {filepath}})"
-                                , parameters("track", id3v1Tag.getTrack(),
+                        session.run("create (s: Song{track: {track}, artist: {artist}, title: {title}, album: {album}, year: {year}, genre: {genre}, filepath: {filepath}, duration: {duration}})"
+                                , parameters(
+                                        "track", id3v1Tag.getTrack(),
                                         "artist", id3v1Tag.getArtist(),
                                         "title", id3v1Tag.getTitle(),
                                         "album", id3v1Tag.getAlbum(),
                                         "year", id3v1Tag.getYear(),
                                         "genre", id3v1Tag.getGenreDescription(),
-                                        "filepath", file.getAbsolutePath()));
+                                        "filepath", file.getAbsolutePath(),
+                                        "duration", mp3file.getLengthInSeconds()));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
