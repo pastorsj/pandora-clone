@@ -88,9 +88,6 @@ public class UserServices implements InitializingBean {
 
     public String retrieveToken(HttpServletRequest request, HttpServletResponse response, String tokenHeader) {
         String token = request.getHeader(tokenHeader);
-
-        System.out.println(token);
-
         token = token.substring(7);
         boolean isValid = jwtTokenUtil.parseJWT(token);
         if(!isValid) {

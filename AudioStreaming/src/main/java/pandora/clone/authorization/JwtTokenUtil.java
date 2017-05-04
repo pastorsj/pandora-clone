@@ -9,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -27,6 +28,8 @@ public class JwtTokenUtil {
     @Value("${jwt.issuer}")
     private String issuer;
 
+    static final String CLAIM_KEY_CREATED = "created";
+
     public String createJWT(String id, String issuer, String subject, long ttlMillis) {
 
         //The JWT signature algorithm we will be using to sign the token
@@ -40,10 +43,12 @@ public class JwtTokenUtil {
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
         //Let's set the JWT Claims
-        JwtBuilder builder = Jwts.builder().setId(id)
+        JwtBuilder builder = Jwts.builder()
+                .setId(id)
                 .setIssuedAt(now)
                 .setSubject(subject)
                 .setIssuer(issuer)
+                .setExpiration(generateExpirationDate())
                 .signWith(signatureAlgorithm, signingKey);
 
         //if it has been specified, let's add the expiration
@@ -137,6 +142,34 @@ public class JwtTokenUtil {
 
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
+        if (expiration == null) {
+            return true;
+        }
         return expiration.before(new Date());
     }
+
+    public Boolean canTokenBeRefreshed(String token) {
+        return !isTokenExpired(token);
+    }
+
+    public String refreshToken(String token) {
+        String refreshedToken;
+        try {
+            final Claims claims = getClaimsFromToken(token);
+            claims.put(CLAIM_KEY_CREATED, new Date());
+            refreshedToken = generateToken(claims);
+        } catch (Exception e) {
+            refreshedToken = null;
+        }
+        return refreshedToken;
+    }
+
+    String generateToken(Map<String, Object> claims) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setExpiration(generateExpirationDate())
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
+
 }

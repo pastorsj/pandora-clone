@@ -53,7 +53,11 @@ public class MusicController {
     public ResponseEntity<Song> play(HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
         if (username == null) {
-            return null;
+            try {
+                response.sendError(403, "The jwt token has expired. You need to login in again.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         Song song = musicServices.playRandomSong(username);
         if (song != null) {
@@ -77,7 +81,11 @@ public class MusicController {
     public ResponseEntity<Song> playGenre(@PathVariable String genre, HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
         if (username == null) {
-            return null;
+            try {
+                response.sendError(403, "The jwt token has expired. You need to login in again.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         Song song = musicServices.playSongByGenre(username, genre);
         if (song != null) {
@@ -96,7 +104,11 @@ public class MusicController {
     public ResponseEntity<String> likeSong(@PathVariable Integer id, HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
         if (username == null) {
-            return null;
+            try {
+                response.sendError(403, "The jwt token has expired. You need to login in again.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         musicServices.likeSong(id, username);
         return new ResponseEntity<>(HttpStatus.OK);

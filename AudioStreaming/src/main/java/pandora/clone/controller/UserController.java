@@ -12,6 +12,7 @@ import pandora.clone.services.UserServices;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Response;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -97,5 +98,22 @@ public class UserController {
             response.setStatus(403);
             return null;
         }
+    }
+
+    @GetMapping("/user/refresh")
+    public ResponseEntity<String> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        String token = request.getHeader(tokenHeader);
+        token = token.substring(7);
+        if (jwtTokenUtil.canTokenBeRefreshed(token)) {
+            String jwt = jwtTokenUtil.refreshToken(token);
+            return new ResponseEntity<>(jwt, HttpStatus.OK);
+        } else {
+            try {
+                response.sendError(403, "You must login since the jwt has expired");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
