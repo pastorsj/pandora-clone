@@ -51,6 +51,7 @@ public class MusicServices implements InitializingBean {
 
     public byte[] playSong(String filepath) {
         try {
+            System.out.println("Filepath " + filepath);
             File file = new File(filepath);
             AudioInputStream mp3Stream = AudioSystem.getAudioInputStream(file);
             AudioFormat sourceFormat = mp3Stream.getFormat();
@@ -103,7 +104,7 @@ public class MusicServices implements InitializingBean {
 
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", id));
+                "s.album as album, s.genre as genre, s.title as title, s.track as track, s.duration as duration;", parameters("id", id));
 
         if (result.hasNext()) {
             Record record = result.next();
@@ -113,7 +114,8 @@ public class MusicServices implements InitializingBean {
                     record.get("album").asString(),
                     record.get("genre").asString(),
                     record.get("title").asString(),
-                    record.get("track").asString());
+                    record.get("track").asString(),
+                    record.get("duration").asInt());
 
             this.playSong(record.get("filepath").asString());
             return s;
@@ -146,7 +148,7 @@ public class MusicServices implements InitializingBean {
 
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
-                "s.album as album, s.genre as genre, s.title as title, s.track as track;", parameters("id", id));
+                "s.album as album, s.genre as genre, s.title as title, s.track as track, s.duration as duration;", parameters("id", id));
 
         if (result.hasNext()) {
             Record record = result.next();
@@ -156,7 +158,8 @@ public class MusicServices implements InitializingBean {
                     record.get("album").asString(),
                     record.get("genre").asString(),
                     record.get("title").asString(),
-                    record.get("track").asString());
+                    record.get("track").asString(),
+                    record.get("duration").asInt());
 
             this.playSong(record.get("filepath").asString());
             return s;

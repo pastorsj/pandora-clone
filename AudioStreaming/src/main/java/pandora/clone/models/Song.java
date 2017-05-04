@@ -12,11 +12,12 @@ public class Song {
     private String genre = "";
     private String title = "";
     private String track = "";
+    private int duration = 0;
 
     public Song() {
     }
 
-    public Song(int id, String artist, String year, String album, String genre, String title, String track) {
+    public Song(int id, String artist, String year, String album, String genre, String title, String track, int duration) {
         this.id = id;
         this.artist = artist;
         this.year = year;
@@ -24,6 +25,7 @@ public class Song {
         this.genre = genre;
         this.title = title;
         this.track = track;
+        this.duration = duration;
     }
 
     public void setArtist(String artist) {
@@ -80,5 +82,13 @@ public class Song {
 
     public String getTrack() {
         return track;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }
