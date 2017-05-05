@@ -53,27 +53,12 @@ public class MusicServices implements InitializingBean {
         try {
             System.out.println("Filepath " + filepath);
             File file = new File(filepath);
-            AudioInputStream mp3Stream = AudioSystem.getAudioInputStream(file);
-            AudioFormat sourceFormat = mp3Stream.getFormat();
-            AudioFormat convertFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-                    sourceFormat.getSampleRate(), 16,
-                    sourceFormat.getChannels(),
-                    sourceFormat.getChannels() * 2,
-                    sourceFormat.getSampleRate(),
-                    false);
-            String tmpName = "tmp" + Thread.currentThread().getId();
-            File tmp = new File(tmpName);
-            AudioInputStream converted = AudioSystem.getAudioInputStream(convertFormat, mp3Stream);
-            AudioSystem.write(converted, AudioFileFormat.Type.WAVE, tmp);
 
-            byte[] ret = Files.readAllBytes(tmp.toPath());
+            byte[] ret = Files.readAllBytes(file.toPath());
 
-            tmp.delete();
             return ret;
 
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
         }
         return null;
