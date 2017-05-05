@@ -25,7 +25,7 @@
 
 package javax;
 
-import com.sun.media.sound.JDK13Services;
+import javax.JDK13Services;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +38,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.sound.sampled.spi.AudioFileReader;
-import javax.sound.sampled.spi.AudioFileWriter;
-import javax.sound.sampled.spi.FormatConversionProvider;
-import javax.sound.sampled.spi.MixerProvider;
-// import javax.sound.sampled.spi.MixerProvider;
+import javax.spi.AudioFileReader;
+import javax.spi.AudioFileWriter;
+import javax.spi.FormatConversionProvider;
+import javax.spi.MixerProvider;
 
 /* $fb TODO:
  * - consistent usage of (typed) collections
@@ -104,7 +103,7 @@ import javax.sound.sampled.spi.MixerProvider;
  * The property value consists of the provider class name
  * and the mixer name, separated by the hash mark (&quot;#&quot;).
  * The provider class name is the fully-qualified
- * name of a concrete {@link javax.sound.sampled.spi.MixerProvider
+ * name of a concrete {@link MixerProvider
  * mixer provider} class. The mixer name is matched against
  * the <code>String</code> returned by the <code>getName</code>
  * method of <code>Mixer.Info</code>.
@@ -908,7 +907,7 @@ public class AudioSystem {
 
         AudioFormat fmts2[] = new AudioFormat[size];
         for(int i=0; i<formats.size(); i++ ) {
-            fmts = (AudioFormat [])(formats.get(i));
+            fmts = (AudioFormat[])(formats.get(i));
             for(int j=0; j<fmts.length; j++ ) {
                 fmts2[index++] = fmts[j];
             }
@@ -1381,7 +1380,7 @@ public class AudioSystem {
      * Obtains the set of format converters (codecs, transcoders, etc.)
      * that are currently installed on the system.
      * @return an array of
-     * {@link javax.sound.sampled.spi.FormatConversionProvider
+     * {@link FormatConversionProvider
      * FormatConversionProvider}
      * objects representing the available format converters.  If no format
      * converters readers are available on the system, an array of length 0 is
@@ -1395,7 +1394,7 @@ public class AudioSystem {
     /**
      * Obtains the set of audio file readers that are currently installed on the system.
      * @return a List of
-     * {@link javax.sound.sampled.spi.AudioFileReader
+     * {@link AudioFileReader
      * AudioFileReader}
      * objects representing the installed audio file readers.  If no audio file
      * readers are available on the system, an empty List is returned.

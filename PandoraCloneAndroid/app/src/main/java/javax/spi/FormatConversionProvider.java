@@ -25,8 +25,8 @@
 
 package javax.spi;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
+import javax.AudioFormat;
+import javax.AudioInputStream;
 
 /**
  * A format conversion provider provides format conversion services

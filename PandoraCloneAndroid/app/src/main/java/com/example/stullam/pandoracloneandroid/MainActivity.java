@@ -26,6 +26,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void register(View view){
+        Intent intent = new Intent(this, RegistrationPage.class);
+        startActivity(intent);
+    }
+
     public void openSearch(View view){
         Intent intent = new Intent(this, SearchPage.class);
         startActivity(intent);

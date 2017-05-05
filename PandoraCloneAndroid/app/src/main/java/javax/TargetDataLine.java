@@ -38,7 +38,7 @@ package javax;
  * The target data line can be obtained from a mixer by invoking the
  * <code>{@link Mixer#getLine getLine}</code>
  * method of <code>Mixer</code> with an appropriate
- * <code>{@link DataLine.Info}</code> object.
+ * <code>{@link Info}</code> object.
  * <p>
  * The <code>TargetDataLine</code> interface provides a method for reading the
  * captured data from the target data line's buffer.Applications

@@ -40,7 +40,7 @@ package javax;
  * <p>
  * A source data line can be obtained from a mixer by invoking the
  * <code>{@link Mixer#getLine getLine}</code> method of <code>Mixer</code> with
- * an appropriate <code>{@link DataLine.Info}</code> object.
+ * an appropriate <code>{@link Info}</code> object.
  * <p>
  * The <code>SourceDataLine</code> interface provides a method for writing
  * audio data to the data line's buffer. Applications that play or mix

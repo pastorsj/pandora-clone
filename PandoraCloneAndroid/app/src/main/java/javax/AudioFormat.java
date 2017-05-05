@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.spi.FormatConversionProvider;
+
 /**
  * <code>AudioFormat</code> is the class that specifies a particular arrangement of data in a sound stream.
  * By examing the information stored in the audio format, you can discover how to interpret the bits in the
@@ -118,7 +120,7 @@ import java.util.Map;
  * @see DataLine#getFormat
  * @see AudioInputStream#getFormat
  * @see AudioFileFormat
- * @see javax.sound.sampled.spi.FormatConversionProvider
+ * @see FormatConversionProvider
  * @since 1.3
  */
 public class AudioFormat {
@@ -571,7 +573,7 @@ public class AudioFormat {
      * are equal.
      *
      * @see AudioFormat
-     * @see javax.sound.sampled.spi.FormatConversionProvider
+     * @see FormatConversionProvider
      *
      * @author Kara Kytle
      * @since 1.3

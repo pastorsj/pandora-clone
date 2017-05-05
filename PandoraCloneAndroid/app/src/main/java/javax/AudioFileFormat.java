@@ -162,7 +162,7 @@ public class AudioFileFormat {
     public AudioFileFormat(Type type, AudioFormat format, int frameLength) {
 
 
-        this(type,AudioSystem.NOT_SPECIFIED,format,frameLength);
+        this(type, AudioSystem.NOT_SPECIFIED,format,frameLength);
     }
 
     /**
@@ -183,7 +183,7 @@ public class AudioFileFormat {
      */
     public AudioFileFormat(Type type, AudioFormat format,
                            int frameLength, Map<String, Object> properties) {
-        this(type,AudioSystem.NOT_SPECIFIED,format,frameLength);
+        this(type, AudioSystem.NOT_SPECIFIED,format,frameLength);
         this.properties = new HashMap<String, Object>(properties);
     }
 

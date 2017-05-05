@@ -20,9 +20,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.AudioInputStream;
+//import javax.sound.sampled.AudioSystem;
+//import javax.sound.sampled.Clip;
+//import javax.sound.sampled.AudioInputStream;
 import javax.AudioSystem;
 import javax.Clip;
+import javax.AudioInputStream;
 
 
 public class SongPage extends AppCompatActivity {

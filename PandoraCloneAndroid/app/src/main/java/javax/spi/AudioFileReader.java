@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.AudioFileFormat;
+import javax.AudioInputStream;
+import javax.UnsupportedAudioFileException;
 
 /**
  * Provider for audio file reading services.  Classes providing concrete

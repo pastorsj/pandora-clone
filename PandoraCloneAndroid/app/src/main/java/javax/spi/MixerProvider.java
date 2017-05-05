@@ -25,7 +25,7 @@
 
 package javax.spi;
 
-import javax.sound.sampled.Mixer;
+import javax.Mixer;
 
 /**
  * A provider or factory for a particular mixer type.

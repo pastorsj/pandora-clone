@@ -26,7 +26,6 @@
 package javax;
 
 
-
 /**
  * Instances of classes that implement the <code>LineListener</code> interface can register to
  * receive events when a line's status changes.
