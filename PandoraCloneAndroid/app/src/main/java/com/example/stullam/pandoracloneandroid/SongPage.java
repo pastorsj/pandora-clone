@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpHeaders;
@@ -43,6 +44,9 @@ public class SongPage extends AppCompatActivity {
 
         Intent intent = getIntent();
         jwt = intent.getExtras().getString("token");
+        TextView textView = (TextView) findViewById(R.id.songName);
+        textView.setText("JWT: " + jwt);
+
         try {
             this.play(new GenericUrl(new URL("http://127.0.0.1:" + 8080 + "/play/song/random")));
         } catch (MalformedURLException e) {
