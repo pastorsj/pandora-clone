@@ -74,6 +74,10 @@ public class RegistrationPage extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        startSong(jwt);
+    }
+
+    public void startSong(String jwt){
         Intent intent = new Intent(this, SongPage.class);
         intent.putExtra("token", jwt);
         startActivity(intent);

@@ -23,9 +23,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //import javax.sound.sampled.AudioSystem;
 //import javax.sound.sampled.Clip;
 //import javax.sound.sampled.AudioInputStream;
-import javax.AudioSystem;
-import javax.Clip;
-import javax.AudioInputStream;
+import javaXCopied.AudioSystem;
+import javaXCopied.Clip;
+import javaXCopied.AudioInputStream;
 
 
 public class SongPage extends AppCompatActivity {

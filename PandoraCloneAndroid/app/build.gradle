@@ -37,5 +37,5 @@ dependencies {
     compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
     //testCompile 'junit:junit:4.12'
     compile files('libs/jdk-9b8c96f96a0f.jar')
-    compile files('libs/tritonus-share-0.3.7-1.jar')
+    //compile files('libs/tritonus-share-0.3.7-1.jar')
 }
