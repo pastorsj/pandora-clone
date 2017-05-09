@@ -38,7 +38,7 @@ public class MusicController {
     @Autowired
     UserServices userServices;
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/song/play/{id}")
     public void playSong(@PathVariable Integer id, HttpServletResponse response) {
         byte[] bytes = musicServices.playSong(id);
@@ -51,7 +51,7 @@ public class MusicController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/play/song/random")
     public ResponseEntity<Song> play(HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
@@ -75,13 +75,13 @@ public class MusicController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("genres")
     public ResponseEntity<List> getGenres() {
         return new ResponseEntity<>(musicServices.getGenres(), HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/play/genre/{genre}")
     public ResponseEntity<Song> playGenre(@PathVariable String genre, HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
@@ -105,7 +105,7 @@ public class MusicController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/like/song/{id}")
     public ResponseEntity<String> likeSong(@PathVariable Integer id, HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);
