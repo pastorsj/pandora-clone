@@ -33,6 +33,7 @@ public class UserController {
     @Autowired
     private UserServices userService;
 
+    @CrossOrigin(origins = "http://localhost:8100")
     @PostMapping("/register")
     public String register(@RequestBody User user, HttpServletResponse response) {
         try {
@@ -49,6 +50,7 @@ public class UserController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/login")
     public ResponseEntity<String> login(HttpServletRequest request, HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
         String usernamePassword = request.getHeader(tokenHeader);
@@ -72,6 +74,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/user/{id}")
     public User getUser(@PathVariable long id, HttpServletRequest request, HttpServletResponse response) {
         try {
@@ -100,6 +103,7 @@ public class UserController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:8100")
     @GetMapping("/user/refresh")
     public ResponseEntity<String> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String token = request.getHeader(tokenHeader);
