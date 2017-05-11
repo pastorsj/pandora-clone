@@ -27,6 +27,7 @@ public class RegistrationPage extends AppCompatActivity {
     private ClientStream cs = null;
     private Thread t;
     private String jwt;
+    private String ipAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +39,19 @@ public class RegistrationPage extends AppCompatActivity {
         EditText usernameET = (EditText) findViewById(R.id.username);
         EditText passwordET = (EditText) findViewById(R.id.password);
         EditText emailET = (EditText) findViewById(R.id.email);
+        EditText ipAddressET = (EditText) findViewById(R.id.ipAddress);
 
         String user = usernameET.getText().toString();
         String password = passwordET.getText().toString();
         String email = emailET.getText().toString();
+        ipAddress = ipAddressET.getText().toString();
 
         registerClient(email, user, password);
     }
 
     public void registerClient(String email, String username, String encryptedPassword) {
         try {
-            GenericUrl url = new GenericUrl(new URL("http://127.0.0.1:" + 8080 + "/register"));
+            GenericUrl url = new GenericUrl(new URL("http://" + ipAddress + ":" + 8080 + "/register"));
             HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
 
             Map<String, String> json = new HashMap<>();
@@ -66,6 +69,7 @@ public class RegistrationPage extends AppCompatActivity {
             HttpResponse response = request.execute();
             jwt = response.parseAsString();
             System.out.println("jwt " + jwt);
+            startSong(jwt);
         } catch (MalformedURLException e) {
             System.err.println("Register error 1");
             e.printStackTrace();
@@ -73,13 +77,12 @@ public class RegistrationPage extends AppCompatActivity {
             System.err.println("Register error 2");
             e.printStackTrace();
         }
-
-        startSong(jwt);
     }
 
     public void startSong(String jwt){
         Intent intent = new Intent(this, SongPage.class);
         intent.putExtra("token", jwt);
+        intent.putExtra("ipAddress", ipAddress);
         startActivity(intent);
     }
 }

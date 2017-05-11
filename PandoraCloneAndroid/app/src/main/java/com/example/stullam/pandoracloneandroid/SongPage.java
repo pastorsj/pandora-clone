@@ -35,7 +35,8 @@ public class SongPage extends AppCompatActivity {
     private AudioInputStream ais;
     private AtomicBoolean streamPaused = new AtomicBoolean(false);
     private AtomicBoolean streamStopped = new AtomicBoolean(false);
-    private String jwt;
+    private String jwt = "";
+    private String ipAddress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +44,15 @@ public class SongPage extends AppCompatActivity {
         setContentView(R.layout.activity_song_page);
 
         Intent intent = getIntent();
+        ipAddress = intent.getExtras().getString("ipAddress");
         jwt = intent.getExtras().getString("token");
         TextView textView = (TextView) findViewById(R.id.songName);
+        TextView ipTxt = (TextView) findViewById(R.id.ipAddressSong);
         textView.setText("JWT: " + jwt);
+        ipTxt.setText("IP: " + ipAddress);
 
         try {
-            this.play(new GenericUrl(new URL("http://127.0.0.1:" + 8080 + "/play/song/random")));
+            this.play(new GenericUrl(new URL("http://" + ipAddress + ":" + 8080 + "/play/song/random")));
         } catch (MalformedURLException e) {
             // i had an exceptiong
         }
