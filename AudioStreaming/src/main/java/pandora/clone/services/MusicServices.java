@@ -86,6 +86,7 @@ public class MusicServices implements InitializingBean {
         }
 
         int id = Integer.parseInt(songId);
+        boolean liked = this.userLikedSong(username, id);
 
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
@@ -100,7 +101,8 @@ public class MusicServices implements InitializingBean {
                     record.get("genre").asString(),
                     record.get("title").asString(),
                     record.get("track").asString(),
-                    record.get("duration").asInt());
+                    record.get("duration").asInt(),
+                    liked);
 
             this.playSong(record.get("filepath").asString());
             return s;
@@ -119,6 +121,13 @@ public class MusicServices implements InitializingBean {
         });
     }
 
+    public boolean userLikedSong(String username, int id) {
+        StatementResult result = this.session.run("match (u:User)-[like:LIKES]->(s:Song) where ID(s)={id} and u.username={username} return like;",
+                parameters("id", id, "username", username));
+
+        return result.hasNext();
+    }
+
     public Song playRandomSong(String username) {
         String songId = this.jedis.spop(username);
 
@@ -130,6 +139,8 @@ public class MusicServices implements InitializingBean {
         System.out.println("songId " + songId);
 
         int id = Integer.parseInt(songId);
+
+        boolean liked = this.userLikedSong(username, id);
 
         StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
                 "return s.filepath as filepath, s.artist as artist, s.year as year," +
@@ -144,7 +155,8 @@ public class MusicServices implements InitializingBean {
                     record.get("genre").asString(),
                     record.get("title").asString(),
                     record.get("track").asString(),
-                    record.get("duration").asInt());
+                    record.get("duration").asInt(),
+                    liked);
 
             this.playSong(record.get("filepath").asString());
             return s;
@@ -165,9 +177,7 @@ public class MusicServices implements InitializingBean {
     }
 
     public void likeSong(Integer id, String username) {
-        Driver driver = GraphDatabase.driver(neo4jServer, AuthTokens.basic(neo4jUsername, neo4jPassword));
-        Session session = driver.session();
-        session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
+        this.session.run("match (u:User {username: {username}}), (s:Song) where ID(s)={id} create (u)-[:LIKES]->(s);",
                 parameters("id", id, "username", username));
     }
 
@@ -180,5 +190,10 @@ public class MusicServices implements InitializingBean {
             return this.playSong(record.get("filepath").asString());
         }
         return null;
+    }
+
+    public void dislikeSong(Integer id, String username) {
+        this.session.run("match (u:User)-[like:LIKES]->(s:Song) where ID(s)={id} and u.username={username} delete like;",
+                parameters("id", id, "username", username));
     }
 }

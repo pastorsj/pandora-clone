@@ -119,5 +119,20 @@ public class MusicController {
         musicServices.likeSong(id, username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @CrossOrigin
+    @GetMapping("/dislike/song/{id}")
+    public ResponseEntity<String> dislikeSong(@PathVariable Integer id, HttpServletRequest request, HttpServletResponse response) {
+        String username = userServices.retrieveToken(request, response, tokenHeader);
+        if (username == null) {
+            try {
+                response.sendError(403, "The jwt token has expired. You need to login in again.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        musicServices.dislikeSong(id, username);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
 
