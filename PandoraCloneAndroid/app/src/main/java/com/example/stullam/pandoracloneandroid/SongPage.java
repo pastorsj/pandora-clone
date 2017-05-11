@@ -1,6 +1,8 @@
 package com.example.stullam.pandoracloneandroid;
 
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -52,7 +54,7 @@ public class SongPage extends AppCompatActivity {
         ipTxt.setText("IP: " + ipAddress);
 
         try {
-            this.play(new GenericUrl(new URL("http://" + ipAddress + ":" + 8080 + "/play/song/random")));
+            this.play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
         } catch (MalformedURLException e) {
             // i had an exceptiong
         }
@@ -73,11 +75,11 @@ public class SongPage extends AppCompatActivity {
             HttpRequest request = requestFactory.buildGetRequest(url);
 
             HttpHeaders headers = new HttpHeaders();
+            System.out.println("JWT" + jwt);
             headers.setAuthorization("Bearer " + jwt);
             request.setHeaders(headers);
 
             HttpResponse response = request.execute();
-            //JsonObject parser = new JsonObjectParser();
             JsonParser parser = new JsonParser();
             JsonElement song = parser.parse(response.parseAsString());
 
@@ -99,18 +101,26 @@ public class SongPage extends AppCompatActivity {
                 System.out.println("Title: " + title);
                 System.out.println("Track: " + track);
 
-                URL songUrl = new URL("http://127.0.0.1:" + 8080 + "/song/play/" + id);
+                //URL songUrl = new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id);
+                String songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(songUrl);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
 
-                this.ais = AudioSystem.getAudioInputStream(songUrl);
-                this.clip = AudioSystem.getClip();
-                this.clip.open(ais);
-                this.clip.start();
-                Thread.sleep(100); // given clip.drain a chance to start
-                this.clip.drain();
-                while (this.streamPaused.get()) {
-                    Thread.sleep(100); // given clip.drain a chance to start
-                    this.clip.drain();
-                }
+
+
+//                this.ais = AudioSystem.getAudioInputStream(songUrl);
+//                this.clip = AudioSystem.getClip();
+//                this.clip.open(ais);
+//                this.clip.start();
+//                Thread.sleep(100); // given clip.drain a chance to start
+//                this.clip.drain();
+//                while (this.streamPaused.get()) {
+//                    Thread.sleep(100); // given clip.drain a chance to start
+//                    this.clip.drain();
+//                }
                 //this.nextSong();
             }
 

@@ -7,7 +7,7 @@
     tools:context="com.example.stullam.pandoracloneandroid.LoginPage">
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/login_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/editText2"
+        app:layout_constraintBottom_toTopOf="@+id/login_password"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="8dp"
@@ -25,7 +25,7 @@
         app:layout_constraintVertical_bias="0.555" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/login_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -43,7 +43,7 @@
         app:layout_constraintVertical_bias="0.769" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/launch_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Login"
