@@ -13,11 +13,12 @@ public class Song {
     private String title = "";
     private String track = "";
     private int duration = 0;
+    private boolean liked = false;
 
     public Song() {
     }
 
-    public Song(int id, String artist, String year, String album, String genre, String title, String track, int duration) {
+    public Song(int id, String artist, String year, String album, String genre, String title, String track, int duration, boolean liked) {
         this.id = id;
         this.artist = artist;
         this.year = year;
@@ -26,6 +27,7 @@ public class Song {
         this.title = title;
         this.track = track;
         this.duration = duration;
+        this.liked = liked;
     }
 
     public void setArtist(String artist) {
@@ -54,6 +56,14 @@ public class Song {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
+    }
+
+    public boolean getLiked() {
+        return this.liked;
     }
 
     public int getId() {

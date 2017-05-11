@@ -5,3 +5,4 @@ AudioStreaming/out/
 *iml
 .DS_Store
 out/
+*.rdb
