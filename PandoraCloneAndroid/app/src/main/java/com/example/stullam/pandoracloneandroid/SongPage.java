@@ -39,18 +39,23 @@ public class SongPage extends AppCompatActivity {
     private AtomicBoolean streamStopped = new AtomicBoolean(false);
     private String jwt = "";
     private String ipAddress = "";
+    TextView songName;
+
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_page);
 
+        this.mediaPlayer  = new MediaPlayer();
+
         Intent intent = getIntent();
         ipAddress = intent.getExtras().getString("ipAddress");
         jwt = intent.getExtras().getString("token");
-        TextView textView = (TextView) findViewById(R.id.songName);
+        this.songName = (TextView) findViewById(R.id.songName);
         TextView ipTxt = (TextView) findViewById(R.id.ipAddressSong);
-        textView.setText("JWT: " + jwt);
+        this.songName.setText("JWT: " + jwt);
         ipTxt.setText("IP: " + ipAddress);
 
         try {
@@ -62,8 +67,27 @@ public class SongPage extends AppCompatActivity {
         ImageButton button = (ImageButton) findViewById(R.id.Play);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Perform action on click
+                resume();
+            }
+        });
 
+        ImageButton skipButton = (ImageButton) findViewById(R.id.Skip);
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    stop();
+                    play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
+                } catch (MalformedURLException e) {
+                    // i had an exceptiong
+                }
+
+            }
+        });
+
+        ImageButton pauseButton = (ImageButton) findViewById(R.id.Pause);
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pause();
             }
         });
 
@@ -101,31 +125,69 @@ public class SongPage extends AppCompatActivity {
                 System.out.println("Title: " + title);
                 System.out.println("Track: " + track);
 
+                this.songName.setText("Title: " + title);
+
                 //URL songUrl = new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id);
                 String songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
-                MediaPlayer mediaPlayer = new MediaPlayer();
+                //MediaPlayer mediaPlayer = new MediaPlayer();
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mediaPlayer.setDataSource(songUrl);
                 mediaPlayer.prepare();
                 mediaPlayer.start();
-
-
-
-//                this.ais = AudioSystem.getAudioInputStream(songUrl);
-//                this.clip = AudioSystem.getClip();
-//                this.clip.open(ais);
-//                this.clip.start();
-//                Thread.sleep(100); // given clip.drain a chance to start
-//                this.clip.drain();
-//                while (this.streamPaused.get()) {
-//                    Thread.sleep(100); // given clip.drain a chance to start
-//                    this.clip.drain();
-//                }
-                //this.nextSong();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private void pause() {
+        mediaPlayer.pause();
+    }
+
+    private void resume() {
+        mediaPlayer.start();
+    }
+
+    private void stop(){
+        mediaPlayer.stop();
+    }
+
+    private void skip(GenericUrl url) {
+        try {
+            HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
+            HttpRequest request = requestFactory.buildGetRequest(url);
+
+            HttpHeaders headers = new HttpHeaders();
+            System.out.println("JWT" + jwt);
+            headers.setAuthorization("Bearer " + jwt);
+            request.setHeaders(headers);
+
+            HttpResponse response = request.execute();
+            JsonParser parser = new JsonParser();
+            JsonElement song = parser.parse(response.parseAsString());
+
+            if(song.isJsonObject()) {
+                JsonObject songInfo = song.getAsJsonObject();
+
+                int id = songInfo.get("id").getAsInt();
+                String artist = songInfo.get("artist").getAsString();
+                String year = songInfo.get("year").getAsString();
+                String album = songInfo.get("album").getAsString();
+                String genre = songInfo.get("genre").getAsString();
+                String title = songInfo.get("title").getAsString();
+                String track = songInfo.get("track").getAsString();
+
+                this.songName.setText("Title: " + title);
+
+                String songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                mediaPlayer.setDataSource(songUrl);
+                mediaPlayer.start();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
