@@ -106,6 +106,30 @@ public class MusicController {
     }
 
     @CrossOrigin
+    @GetMapping("/play/likes")
+    public ResponseEntity<Song> playByLikes(HttpServletRequest request, HttpServletResponse response) {
+        String username = userServices.retrieveToken(request, response, tokenHeader);
+        if (username == null) {
+            try {
+                response.sendError(403, "The jwt token has expired. You need to login in again.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Song song = musicServices.playByLikes(username);
+        if (song != null) {
+            return new ResponseEntity<>(song, HttpStatus.OK);
+        } else {
+            try {
+                response.sendError(404, "You don't have any likes");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @CrossOrigin
     @GetMapping("/like/song/{id}")
     public ResponseEntity<String> likeSong(@PathVariable Integer id, HttpServletRequest request, HttpServletResponse response) {
         String username = userServices.retrieveToken(request, response, tokenHeader);

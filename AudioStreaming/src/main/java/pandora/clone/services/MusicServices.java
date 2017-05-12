@@ -164,6 +164,55 @@ public class MusicServices implements InitializingBean {
         return null;
     }
 
+    public Song playByLikes(String username) {
+        String songId = this.jedis.spop(username);
+
+        if (songId == null) {
+            this.populateByLikes(username);
+            songId = this.jedis.spop(username);
+        }
+
+        System.out.println("songId " + songId);
+
+        int id = Integer.parseInt(songId);
+
+        boolean liked = this.userLikedSong(username, id);
+
+        StatementResult result = this.session.run("match (s:Song) where ID(s)={id}" +
+                "return s.filepath as filepath, s.artist as artist, s.year as year," +
+                "s.album as album, s.genre as genre, s.title as title, s.track as track, s.duration as duration;", parameters("id", id));
+
+        if (result.hasNext()) {
+            Record record = result.next();
+            Song s = new Song(id,
+                    record.get("artist").asString(),
+                    record.get("year").asString(),
+                    record.get("album").asString(),
+                    record.get("genre").asString(),
+                    record.get("title").asString(),
+                    record.get("track").asString(),
+                    record.get("duration").asInt(),
+                    liked);
+
+            this.playSong(record.get("filepath").asString());
+            return s;
+        }
+        return null;
+    }
+
+    private void populateByLikes(String username) {
+        this.jedis.del(username);
+
+        StatementResult result = this.session.run("" +
+                "match (u:User {username: {username}})-[:LIKES]->(:Song)<-[:LIKES]-(u2:User) " +
+                "match (u2:User)-[:LIKES]->(s:Song) return ID(s) as id union " +
+                "match (u: User)-[:LIKES]->(s3:Song) return ID(s3) as id;", parameters("username", username));
+
+        System.out.println("Liked songs " + result.summary());
+
+        result.list().stream().forEach(record -> jedis.sadd(username, Integer.toString(record.get("id").asInt())));
+    }
+
     public void populateRandomPlaylist(String username) {
         this.jedis.del(username);
 
@@ -171,9 +220,7 @@ public class MusicServices implements InitializingBean {
                 "RETURN ID(s) as id, s.filepath as filepath, s.artist as artist, s.year as year," +
                 "s.album as album, s.genre as genre, s.title as title, s.track as track");
 
-        result.list().stream().forEach(record -> {
-            jedis.sadd(username, Integer.toString(record.get("id").asInt()));
-        });
+        result.list().stream().forEach(record -> jedis.sadd(username, Integer.toString(record.get("id").asInt())));
     }
 
     public void likeSong(Integer id, String username) {
