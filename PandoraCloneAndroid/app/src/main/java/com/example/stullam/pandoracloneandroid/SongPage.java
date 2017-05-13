@@ -21,6 +21,8 @@ import com.google.gson.JsonParser;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //import javax.sound.sampled.AudioSystem;
@@ -39,7 +41,11 @@ public class SongPage extends AppCompatActivity {
     private AtomicBoolean streamStopped = new AtomicBoolean(false);
     private String jwt = "";
     private String ipAddress = "";
+    private String songUrl;
     TextView songName;
+    TextView songArtist;
+    TextView songYear;
+    HashMap<String, HashMap<String, String>> previousSongMap = new HashMap<String, HashMap<String, String>>();
 
     private MediaPlayer mediaPlayer;
 
@@ -48,20 +54,16 @@ public class SongPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_page);
 
-        this.mediaPlayer  = new MediaPlayer();
-
         Intent intent = getIntent();
-        ipAddress = intent.getExtras().getString("ipAddress");
         jwt = intent.getExtras().getString("token");
+
         this.songName = (TextView) findViewById(R.id.songName);
-        TextView ipTxt = (TextView) findViewById(R.id.ipAddressSong);
-        this.songName.setText("JWT: " + jwt);
-        ipTxt.setText("IP: " + ipAddress);
+        this.songArtist = (TextView) findViewById(R.id.songArtist);
+        this.songYear = (TextView) findViewById(R.id.songYear);
 
         try {
             this.play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
         } catch (MalformedURLException e) {
-            // i had an exceptiong
         }
 
         ImageButton button = (ImageButton) findViewById(R.id.Play);
@@ -74,13 +76,11 @@ public class SongPage extends AppCompatActivity {
         ImageButton skipButton = (ImageButton) findViewById(R.id.Skip);
         skipButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                try {
-                    stop();
-                    play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
-                } catch (MalformedURLException e) {
-                    // i had an exceptiong
-                }
-
+            try {
+                stop();
+                skip(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
+            } catch (MalformedURLException e) {
+            }
             }
         });
 
@@ -88,6 +88,14 @@ public class SongPage extends AppCompatActivity {
         pauseButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 pause();
+            }
+        });
+
+        ImageButton previousButton = (ImageButton) findViewById(R.id.Previous);
+        previousButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                stop();
+                previous();
             }
         });
 
@@ -118,18 +126,24 @@ public class SongPage extends AppCompatActivity {
                 String title = songInfo.get("title").getAsString();
                 String track = songInfo.get("track").getAsString();
 
-                System.out.println("Artist: " + artist);
-                System.out.println("Album: " + album);
-                System.out.println("Year: " + year);
-                System.out.println("Genre: " + genre);
-                System.out.println("Title: " + title);
-                System.out.println("Track: " + track);
-
                 this.songName.setText("Title: " + title);
+                this.songArtist.setText("Artist: " + artist);
+                this.songYear.setText("Year: " + year);
+
+                HashMap<String, String> songInfoMap = new HashMap<String, String>();
+                songInfoMap.put("artist", artist);
+                songInfoMap.put("year", year);
+                songInfoMap.put("album", album);
+                songInfoMap.put("genre", genre);
+                songInfoMap.put("title", title);
+                songInfoMap.put("track", track);
+                songInfoMap.put("previousSong", "base");
 
                 //URL songUrl = new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id);
-                String songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                this.songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                previousSongMap.put(this.songUrl, songInfoMap);
                 //MediaPlayer mediaPlayer = new MediaPlayer();
+                this.mediaPlayer  = new MediaPlayer();
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mediaPlayer.setDataSource(songUrl);
                 mediaPlayer.prepare();
@@ -155,6 +169,7 @@ public class SongPage extends AppCompatActivity {
 
     private void skip(GenericUrl url) {
         try {
+            //this.mediaPlayer = new MediaPlayer();
             HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
             HttpRequest request = requestFactory.buildGetRequest(url);
 
@@ -178,13 +193,52 @@ public class SongPage extends AppCompatActivity {
                 String title = songInfo.get("title").getAsString();
                 String track = songInfo.get("track").getAsString();
 
-                this.songName.setText("Title: " + title);
+                this.songName.setText("Title: " + title);this.songName.setText("Title: " + title);
+                this.songArtist.setText("Artist: " + artist);
+                this.songYear.setText("Year: " + year);
 
-                String songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                HashMap<String, String> songInfoMap = new HashMap<String, String>();
+                songInfoMap.put("artist", artist);
+                songInfoMap.put("year", year);
+                songInfoMap.put("album", album);
+                songInfoMap.put("genre", genre);
+                songInfoMap.put("title", title);
+                songInfoMap.put("track", track);
+                songInfoMap.put("previousSong", this.songUrl);
+
+                this.songUrl = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080" + "/song/play/" + id;
+                previousSongMap.put(this.songUrl, songInfoMap);
+                this.mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mediaPlayer.setDataSource(songUrl);
+                mediaPlayer.prepare();
                 mediaPlayer.start();
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void previous() {
+        try {
+            HashMap<String, String> previousSongInfo = this.previousSongMap.get(this.songUrl);
+            this.songUrl = previousSongInfo.get("previousSong");
+            previousSongInfo = this.previousSongMap.get(this.songUrl);
+
+            String title = previousSongInfo.get("title");
+            String artist = previousSongInfo.get("artist");
+            String year = previousSongInfo.get("year");
+
+            this.songName.setText("Title: " + title);
+            this.songArtist.setText("Artist: " + artist);
+            this.songYear.setText("Year: " + year);
+
+            this.mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setDataSource(this.songUrl);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

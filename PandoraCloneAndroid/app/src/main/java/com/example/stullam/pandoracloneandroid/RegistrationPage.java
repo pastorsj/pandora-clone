@@ -46,13 +46,11 @@ public class RegistrationPage extends AppCompatActivity {
                 EditText usernameET = (EditText) findViewById(R.id.username);
                 EditText passwordET = (EditText) findViewById(R.id.password);
                 EditText emailET = (EditText) findViewById(R.id.email);
-                EditText ipAddressET = (EditText) findViewById(R.id.ipAddress);
 
 
                 String user = usernameET.getText().toString();
                 String password = passwordET.getText().toString();
                 String email = emailET.getText().toString();
-                ipAddress = ipAddressET.getText().toString();
 
                 registerClient(email, user, password);
             }
@@ -107,7 +105,6 @@ public class RegistrationPage extends AppCompatActivity {
     public void startSong(String jwt){
         Intent intent = new Intent(this, SongPage.class);
         intent.putExtra("token", jwt);
-        intent.putExtra("ipAddress", ipAddress);
         startActivity(intent);
     }
 }
