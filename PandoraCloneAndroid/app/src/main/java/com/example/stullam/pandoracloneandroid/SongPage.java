@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -35,10 +36,6 @@ import javaXCopied.AudioInputStream;
 
 public class SongPage extends AppCompatActivity {
 
-    private Clip clip;
-    private AudioInputStream ais;
-    private AtomicBoolean streamPaused = new AtomicBoolean(false);
-    private AtomicBoolean streamStopped = new AtomicBoolean(false);
     private String jwt = "";
     private String ipAddress = "";
     private String songUrl;
@@ -63,8 +60,7 @@ public class SongPage extends AppCompatActivity {
 
         try {
             this.play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
-        } catch (MalformedURLException e) {
-        }
+        } catch (MalformedURLException e) {}
 
         ImageButton button = (ImageButton) findViewById(R.id.Play);
         button.setOnClickListener(new View.OnClickListener() {
@@ -79,15 +75,20 @@ public class SongPage extends AppCompatActivity {
             try {
                 stop();
                 skip(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
-            } catch (MalformedURLException e) {
-            }
+            } catch (MalformedURLException e) {}
             }
         });
-
         ImageButton pauseButton = (ImageButton) findViewById(R.id.Pause);
         pauseButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 pause();
+            }
+        });
+
+        Button searchButton = (Button) findViewById(R.id.searchSongs);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                searchSongs();
             }
         });
 
@@ -99,6 +100,19 @@ public class SongPage extends AppCompatActivity {
             }
         });
 
+        Button playGenreButton = (Button) findViewById(R.id.playGenreButton);
+        playGenreButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                stop();
+                playGenres();
+            }
+        });
+    }
+
+    private void playGenres(){
+        Intent intent = new Intent(this, PlayGenres.class);
+        intent.putExtra("token", jwt);
+        startActivity(intent);
     }
 
     private void play(GenericUrl url) {
@@ -126,9 +140,9 @@ public class SongPage extends AppCompatActivity {
                 String title = songInfo.get("title").getAsString();
                 String track = songInfo.get("track").getAsString();
 
-                this.songName.setText("Title: " + title);
-                this.songArtist.setText("Artist: " + artist);
-                this.songYear.setText("Year: " + year);
+                this.songName.setText(title);
+                this.songArtist.setText(artist);
+                this.songYear.setText(year);
 
                 HashMap<String, String> songInfoMap = new HashMap<String, String>();
                 songInfoMap.put("artist", artist);
@@ -169,7 +183,6 @@ public class SongPage extends AppCompatActivity {
 
     private void skip(GenericUrl url) {
         try {
-            //this.mediaPlayer = new MediaPlayer();
             HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
             HttpRequest request = requestFactory.buildGetRequest(url);
 
@@ -193,9 +206,9 @@ public class SongPage extends AppCompatActivity {
                 String title = songInfo.get("title").getAsString();
                 String track = songInfo.get("track").getAsString();
 
-                this.songName.setText("Title: " + title);this.songName.setText("Title: " + title);
-                this.songArtist.setText("Artist: " + artist);
-                this.songYear.setText("Year: " + year);
+                this.songName.setText(title);
+                this.songArtist.setText(artist);
+                this.songYear.setText(year);
 
                 HashMap<String, String> songInfoMap = new HashMap<String, String>();
                 songInfoMap.put("artist", artist);
@@ -214,7 +227,6 @@ public class SongPage extends AppCompatActivity {
                 mediaPlayer.prepare();
                 mediaPlayer.start();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -230,9 +242,9 @@ public class SongPage extends AppCompatActivity {
             String artist = previousSongInfo.get("artist");
             String year = previousSongInfo.get("year");
 
-            this.songName.setText("Title: " + title);
-            this.songArtist.setText("Artist: " + artist);
-            this.songYear.setText("Year: " + year);
+            this.songName.setText(title);
+            this.songArtist.setText(artist);
+            this.songYear.setText(year);
 
             this.mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -244,4 +256,9 @@ public class SongPage extends AppCompatActivity {
         }
     }
 
+    private void searchSongs() {
+        Intent intent = new Intent(this, SearchPage.class);
+        intent.putExtra("token", jwt);
+        startActivity(intent);
+    }
 }
