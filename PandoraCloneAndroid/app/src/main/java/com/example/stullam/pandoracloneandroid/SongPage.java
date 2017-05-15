@@ -1,5 +1,6 @@
 package com.example.stullam.pandoracloneandroid;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.api.client.http.GenericUrl;
@@ -43,6 +45,8 @@ public class SongPage extends AppCompatActivity {
     TextView songArtist;
     TextView songYear;
     HashMap<String, HashMap<String, String>> previousSongMap = new HashMap<String, HashMap<String, String>>();
+    private SeekBar volumeSeekbar = null;
+    private AudioManager audioManager = null;
 
     private MediaPlayer mediaPlayer;
 
@@ -53,6 +57,9 @@ public class SongPage extends AppCompatActivity {
 
         Intent intent = getIntent();
         jwt = intent.getExtras().getString("token");
+
+        this.mediaPlayer  = new MediaPlayer();
+        initControls();
 
         this.songName = (TextView) findViewById(R.id.songName);
         this.songArtist = (TextView) findViewById(R.id.songArtist);
@@ -107,6 +114,31 @@ public class SongPage extends AppCompatActivity {
                 playGenres();
             }
         });
+    }
+
+    private void initControls(){
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        try{
+            volumeSeekbar = (SeekBar)findViewById(R.id.soundSeekBar);
+            this.audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            volumeSeekbar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            volumeSeekbar.setProgress(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+            volumeSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+                @Override
+                public void onStopTrackingTouch(SeekBar arg0){}
+
+                @Override
+                public void onStartTrackingTouch(SeekBar arg0) {}
+
+                @Override
+                public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                }
+            });
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void playGenres(){

@@ -1,5 +1,6 @@
 package com.example.stullam.pandoracloneandroid;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.api.client.http.GenericUrl;
@@ -27,15 +29,17 @@ import java.util.HashMap;
 public class GenreSongPage extends AppCompatActivity {
 
     private String jwt = "";
-    private String ipAddress = "";
-    private String songUrl;
     TextView songName;
     TextView songArtist;
     TextView songYear;
+    private String currentGenre;
 
     String genreIntent;
 
     private MediaPlayer mediaPlayer;
+
+    private SeekBar volumeSeekbar = null;
+    private AudioManager audioManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,10 @@ public class GenreSongPage extends AppCompatActivity {
         Intent intent = getIntent();
         jwt = intent.getExtras().getString("token");
         genreIntent = intent.getExtras().getString("genre");
+        this.currentGenre = genreIntent;
+
+        this.mediaPlayer  = new MediaPlayer();
+        initControls();
 
         this.songName = (TextView) findViewById(R.id.genreSongName);
         this.songArtist = (TextView) findViewById(R.id.genreSongArtist);
@@ -78,10 +86,8 @@ public class GenreSongPage extends AppCompatActivity {
         ImageButton skipButton = (ImageButton) findViewById(R.id.GenreSkip);
         skipButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //try {
-                    stop();
-                    //skip(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
-                //} catch (MalformedURLException e) {}
+                stop();
+                playGenre(currentGenre);
             }
         });
         ImageButton pauseButton = (ImageButton) findViewById(R.id.GenrePause);
@@ -100,6 +106,31 @@ public class GenreSongPage extends AppCompatActivity {
         });
     }
 
+    private void initControls(){
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        try{
+            volumeSeekbar = (SeekBar)findViewById(R.id.genreSeekSoundBar);
+            this.audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            volumeSeekbar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            volumeSeekbar.setProgress(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+            volumeSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+                @Override
+                public void onStopTrackingTouch(SeekBar arg0){}
+
+                @Override
+                public void onStartTrackingTouch(SeekBar arg0) {}
+
+                @Override
+                public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                }
+            });
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void stop(){ this.mediaPlayer.stop();}
 
     private void pause() {
@@ -111,6 +142,7 @@ public class GenreSongPage extends AppCompatActivity {
     }
 
     private void playGenre(String genreString){
+        this.currentGenre = genreString;
         try {
             String urlToBuild = "http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/genre/" + genreString;
             GenericUrl url = new GenericUrl(new URL(urlToBuild));
