@@ -26,7 +26,9 @@
         <activity android:name=".SearchPage" />
         <activity android:name=".RegistrationPage" />
         <activity android:name=".PlayGenres" />
-        <activity android:name=".GenreSongPage"></activity>
+        <activity android:name=".GenreSongPage" />
+        <activity android:name=".PlayByLikes" />
+        <activity android:name=".HomePage"></activity>
     </application>
 
 </manifest>

@@ -75,7 +75,7 @@ public class LoginPage extends AppCompatActivity {
     }
 
     public void startSong(String jwt){
-        Intent intent = new Intent(this, SongPage.class);
+        Intent intent = new Intent(this, HomePage.class);
         intent.putExtra("token", jwt);
         intent.putExtra("ipAddress", "hello");
         startActivity(intent);

@@ -104,6 +104,21 @@ public class GenreSongPage extends AppCompatActivity {
                 //previous();
             }
         });
+
+        ImageButton homePageButton = (ImageButton) findViewById(R.id.homePageButtonGenreSong);
+        homePageButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                stop();
+                goToHomePage();
+            }
+        });
+    }
+
+    private void goToHomePage(){
+        Intent intent = new Intent(this, HomePage.class);
+        intent.putExtra("token", jwt);
+        intent.putExtra("ipAddress", "hello");
+        startActivity(intent);
     }
 
     private void initControls(){

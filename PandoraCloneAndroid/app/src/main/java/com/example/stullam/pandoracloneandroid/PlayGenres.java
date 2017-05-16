@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 public class PlayGenres extends AppCompatActivity {
 
@@ -31,6 +32,20 @@ public class PlayGenres extends AppCompatActivity {
                 playGenre("Rock");
             }
         });
+
+        ImageButton homePageButton = (ImageButton) findViewById(R.id.homePageButtonGenre);
+        homePageButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToHomePage();
+            }
+        });
+    }
+
+    private void goToHomePage(){
+        Intent intent = new Intent(this, HomePage.class);
+        intent.putExtra("token", jwt);
+        intent.putExtra("ipAddress", "hello");
+        startActivity(intent);
     }
 
     private void playGenre(String genre){
