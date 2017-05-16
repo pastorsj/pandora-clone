@@ -45,10 +45,13 @@ public class SongPage extends AppCompatActivity {
     TextView songArtist;
     TextView songYear;
     HashMap<String, HashMap<String, String>> previousSongMap = new HashMap<String, HashMap<String, String>>();
+    private boolean isLiked = false;
+
     private SeekBar volumeSeekbar = null;
     private AudioManager audioManager = null;
-
     private MediaPlayer mediaPlayer;
+
+    Button likeSongButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +95,12 @@ public class SongPage extends AppCompatActivity {
             }
         });
 
-        Button searchButton = (Button) findViewById(R.id.searchSongs);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                searchSongs();
-            }
-        });
+        //Button searchButton = (Button) findViewById(R.id.searchSongs);
+        //searchButton.setOnClickListener(new View.OnClickListener() {
+        //    public void onClick(View v) {
+        //        searchSongs();
+        //    }
+        //});
 
         ImageButton previousButton = (ImageButton) findViewById(R.id.Previous);
         previousButton.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +117,30 @@ public class SongPage extends AppCompatActivity {
                 playGenres();
             }
         });
+
+        this.likeSongButton = (Button) findViewById(R.id.likeSongButton);
+        likeSongButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                if(!isLiked){
+                    likeSong();
+                } else {
+                    dislikeSong();
+                }
+
+                likeSong();
+            }
+        });
+    }
+
+    private void likeSong(){
+        this.likeSongButton.setText("Dislike this song");
+        this.isLiked = true;
+    }
+
+    private void dislikeSong(){
+        this.likeSongButton.setText("Like this song");
+        this.isLiked = false;
     }
 
     private void initControls(){
