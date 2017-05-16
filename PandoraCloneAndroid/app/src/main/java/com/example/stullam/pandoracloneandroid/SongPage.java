@@ -127,8 +127,6 @@ public class SongPage extends AppCompatActivity {
                 } else {
                     dislikeSong();
                 }
-
-                likeSong();
             }
         });
     }
