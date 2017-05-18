@@ -43,7 +43,7 @@ public class PlayByLikes extends AppCompatActivity {
     TextView songName;
     TextView songArtist;
     TextView songYear;
-    private boolean isLiked = false;
+    private boolean isLiked = true;
     String id = "";
 
     private SeekBar volumeSeekbar = null;
@@ -77,6 +77,8 @@ public class PlayByLikes extends AppCompatActivity {
                 try {
                     stop();
                     play(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/likes")));
+                    isLiked = true;
+                    likeSongButton.setText("Dislike this song");
                 }
                 catch (MalformedURLException e) {}
             }
@@ -183,7 +185,7 @@ public class PlayByLikes extends AppCompatActivity {
     private void initControls(){
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         try{
-            volumeSeekbar = (SeekBar)findViewById(R.id.soundSeekBar);
+            volumeSeekbar = (SeekBar)findViewById(R.id.likesSoundSeekBar);
             this.audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             volumeSeekbar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
             volumeSeekbar.setProgress(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));

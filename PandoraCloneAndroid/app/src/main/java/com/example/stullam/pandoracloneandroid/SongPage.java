@@ -87,6 +87,7 @@ public class SongPage extends AppCompatActivity {
                 stop();
                 skip(new GenericUrl(new URL("http://ec2-34-224-40-124.compute-1.amazonaws.com:8080/play/song/random")));
                 isLiked = false;
+                likeSongButton.setText("Like this song");
             } catch (MalformedURLException e) {}
             }
         });
