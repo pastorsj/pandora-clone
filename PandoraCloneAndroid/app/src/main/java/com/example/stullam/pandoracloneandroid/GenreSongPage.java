@@ -58,13 +58,13 @@ public class GenreSongPage extends AppCompatActivity {
         this.songArtist = (TextView) findViewById(R.id.genreSongArtist);
         this.songYear = (TextView) findViewById(R.id.genreSongYear);
 
-        playGenre(genreIntent);
+        playGenre("Rock");
 
         Button classicalButton = (Button) findViewById(R.id.playClassicalGenreButton);
         classicalButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 stop();
-                playGenre("Classical");
+                playGenre("Rock");
             }
         });
 
